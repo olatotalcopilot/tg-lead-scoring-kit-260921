@@ -1,0 +1,173 @@
+# TG Lead Scoring Kit — read this first
+
+**What this is.** Everything needed to score a batch of prospects for TG Sales Agency the same
+way every time. Hand this folder to a teammate, point their AI agent at
+**`AGENT-START-HERE.md`**, and the agent will read the method, ask you for the few things only
+you can supply, run the batch and hand back a CRM-ready spreadsheet plus a written record of what
+it did.
+
+You do not need to read the method yourself. This page is the whole picture in a few minutes.
+
+---
+
+## The problem it solves
+
+Prospecting used to be inconsistent: the lead-search tool and the CRM held half the picture
+each, there was no shared definition of a "good" lead, and effort leaked into poor-fit or
+already-dead records. This kit is the agreed definition, written down and executable, so two
+people running two batches produce numbers that mean the same thing.
+
+## How it scores
+
+Every lead gets **two scores out of 100**, because TG's real wins and TG's stated ICP are
+different companies:
+
+- **Proven-Fit** — how much this lead looks like the customers TG has actually closed:
+  founder-led, sub-50-employee service businesses buying $5–12K engagements.
+- **Ideal-Fit** — how well it matches the ICP sheet: 51–500 employees, $10–100M revenue, the
+  target industry list.
+
+Leads hot on both are priority one. Hot on one only routes to a different play. Keeping them
+separate is the point — a single score would hide the gap.
+
+Each score is built from four layers: **fit** (40 pts, the only part that differs between the
+two scores), **reachability** (15), **research signals** from the web and LinkedIn (45), and
+**CRM history**, which sits beside the score and never moves it, because CRM labels have proved
+unreliable.
+
+Separately, a short list of **hard disqualifiers** removes leads that cannot or will not buy: no
+web presence, a competitor, visible distress, buying controlled by a parent company, or a
+workforce concentrated offshore. A disqualified lead **keeps its real scores** — the `route`
+column records the drop, so nothing is hidden and a decision can be reversed.
+
+Every row comes out with a route — **Work**, **Review** or **Disqualified** — and a plain-English
+`verdict` saying why, so a rep or a reviewer never has to reconstruct the reasoning.
+
+## What you have to supply
+
+Five things. The agent will ask for all of them up front and confirm the numbers back before
+spending anything.
+
+1. **The list** — an Apollo saved list, a CSV or a spreadsheet. If two sources exist for the same
+   campaign, say which one wins.
+2. **A campaign name**, e.g. `2026-09_GA-Founders`. It is the key that ties the batch together
+   across systems.
+3. **Which tools are connected** — Apollo and web search are required; the RapidAPI LinkedIn
+   feed is strongly recommended. Without it the whole batch is scored web-only and cannot be
+   compared against batches that had it.
+4. **Where the results should go.**
+5. **The budget** — Apollo credits and the RapidAPI tier.
+
+**On cost:** looking a contact up in Apollo is free and returns full company data, so a list of
+contacts your team has already revealed can score end to end for nothing. A list of brand-new
+prospects pays a credit per reveal. RapidAPI runs about 2–3 credits per company. The dominant
+cost is usually the AI research itself, which is controlled by which model the research agents
+run on — put bulk research on a cheap tier and reserve the expensive one for synthesis.
+
+## What you get back
+
+A **run folder**, separate from this kit:
+
+- **`TG-scored-full-<campaign>-v3.1.csv`** — the deliverable. One row per contact, ~60 columns:
+  both scores, both tiers, company-level scores, the route, the reason, the evidence links, and
+  every input that fed the score.
+- **`TG-run-<campaign>.md`** — the run doc. Counts by route, every disqualification with its
+  reason, every good lead that was dropped and why, what was *not* verified, and what needs a
+  human decision. This is what makes a drop auditable six months later.
+- **The scorer, the config, the judgement calls and the intermediate files**, so the run can be
+  reproduced exactly.
+
+---
+
+## What is in this folder
+
+| File | What it is | Who reads it |
+|---|---|---|
+| `README-FOR-HUMANS.md` | This page | You |
+| `AGENT-START-HERE.md` | The entry point. Tells the agent what to read, what to ask you for, how to run the batch and how to answer your questions about it | The agent, first |
+| `method/1-scoring-rubric.md` | **The rubric.** What is scored, the weights, the disqualifiers, the tiers, the routes, the review reasons. The final authority — if any other file disagrees with it, the other file is wrong | The agent; you, if you want to know why a lead scored what it did |
+| `method/2-run-playbook.md` | How a run executes: the pipeline, the non-obvious tool techniques that keep a run free, the seven gates, and the output contract | The agent |
+| `method/3-field-schema.md` | Every output column, its type and its allowed values — and the 23 custom fields to create in Apollo and the CRM so scores can be written back | The agent; whoever sets up the CRM fields |
+| `method/4-research-brief.md` | What a research agent must collect for each company and exactly how to record it | The agent, and any sub-agent it delegates research to |
+| `scorer/TG-score-batch.py` | The scorer. Implements the rubric's arithmetic, checks its own output against the rubric's rules, and refuses to run on evidence that is empty, hedged or malformed | The agent runs it; nobody edits it per run |
+| `scorer/file-formats.md` | The exact contract for every file the scorer reads | The agent |
+| `scorer/run-config.example.json` | A filled-in example of the run's settings | The agent |
+| `scorer/judgments.example.json` | A filled-in example of the human-judgement file — **the only file that changes from one run to the next** | The agent; you, when you overrule something |
+| `templates/run-doc-template.md` | The run-doc skeleton, so every run is written up the same way | The agent |
+| `selftest/` | Six fabricated contacts and a one-second check that the scorer works and its safety guards fire. No real data, no network, no credits | The agent, before every run |
+
+**The division of labour matters.** The rubric holds the rules, the scorer holds the arithmetic,
+and `judgments.json` holds the human calls for one batch. Nothing is ever copied between them —
+copying is what makes two versions drift apart and produce numbers that quietly stop meaning the
+same thing.
+
+---
+
+## Known gaps and roadmap
+
+Written down because a method you can trust is one whose weak points are named. Nothing here
+blocks a run; all of it is worth knowing before you read a number too confidently.
+
+### Known gaps in the method
+
+1. **The parent-control disqualifier produces false drops.** A company whose careers page
+   redirects to its parent is dropped even when it has its own brand, sales team, P&L and
+   budget. At least one such company was dropped by the rule and then closed as a deal worth
+   several times TG's median. **This is the next change** — see the roadmap below. Until it
+   ships, the rule stands as written: operational evidence disqualifies at any deal age.
+2. **A Proven-Fit Hot row without a verified email stops the run.** The rubric requires a
+   verified email for Proven-Fit Hot, but capping such a row at Qualified would be a tiering
+   change the rubric does not state. So the scorer flags it and a human decides — every run,
+   every time. It needs a standing ruling.
+3. **The holdout is not a random sample.** It is every unworked low scorer, which means the
+   low-score control is weak and forward validation of the research layer has not really begun.
+   The fix is to reserve the holdout by random sample before routing.
+4. **An unassessed industry scores the same as one that passed the test.** Industries the scorer
+   does not recognise get a default 8 out of 10, so "this passed the sales-motion test" and
+   "nobody ran the test" are indistinguishable in the data.
+5. **The `domain` column shows the source list's domain, not the one that was scored.** Where
+   the live lookup resolved a different domain, that is what the ratio and the research were
+   measured on, and a reader of the spreadsheet cannot tell.
+6. **Subjective reviewer signals are not systematised.** Judgements like "the CEO seems settled"
+   or "the website looks local" are re-made per lead rather than encoded as a rule that binds
+   every run. The same is true of the boundary of the competitor rule and of the unassessed
+   industries — they are one problem, not three.
+7. **"Callable" is an axis the model does not score.** Reviewers reliably flag companies as
+   exciting to call — good site, active people, real market presence — and those markers are
+   close to the *inverse* of the Proven-Fit thesis, which rewards a founder still carrying
+   revenue and marketing that is not landing. The model measures need and reachability, not
+   whether there is a live conversation to walk into. One of the two instincts is wrong and it
+   is cheap to find out which.
+8. **Manager-level titles are excluded when the list is built, but the rubric still scores
+   them 4.** Both behaviours are defensible; having them undocumented in the same system is not.
+9. **Two LinkedIn bands genuinely overlap.** A large firm can post consistently, draw engagement
+   below ~0.3% of followers, and still get dozens of reactions per post — satisfying both the
+   "trying but not landing" 10 and the "real traction" 6. The research brief requires the reading
+   to be stated; it does not yet pick one.
+10. **LinkedIn hiring is scored from post content only**, because the endpoint exposes no job
+    count. A company with live requisitions and no hiring posts scores low there.
+11. **A hiring score of 0 usually means "not found", not "verified absent"** — only the research
+    note distinguishes them, and no column does.
+
+### Roadmap
+
+| # | Item | Why it matters |
+|---|---|---|
+| 1 | **Parent-controlled companies stop being disqualified.** Instead the finding is surfaced in `verdict` and `ownership` and the lead is worked. Ships as a point release with its own version number | Recovers confirmed false drops; the largest known loss in the method |
+| 2 | Settle the Proven-Fit Hot / verified-email question into a standing rule | Removes a stop that recurs on every run |
+| 3 | Reserve the holdout by random sample before routing | Makes forward validation of the research layer possible at all |
+| 4 | Encode the subjective judgements, the competitor-rule boundary and the unassessed industries as rules | One workstream, not three tickets; ends the per-run re-decision |
+| 5 | Emit the resolved live domain alongside the source-list domain | Lets a spreadsheet reader see which company was actually measured |
+| 6 | Run the "exciting to call" tag experiment on a batch's Work rows and compare conversion against equally-scored rows | Cheapest available test of whether the model or the reviewer is right |
+| 7 | **Write-back.** Create the 23 shared custom fields in Apollo and the CRM so scores land where reps work | Turns the method into infrastructure rather than a spreadsheet. Blocked on an admin creating the fields once; until then, named lists plus the CSV are the workaround |
+| 8 | **Reconcile the two databases** into one matched, deduped source of truth | Must come before any full-scale run, or the same company gets scored twice across unaligned systems |
+| 9 | **Full run** across all funnel survivors, plus a recurring refresh | Data decays; stale records produce wrong buyers and missed job changes |
+
+### How to change the method
+
+Change the rubric first, then the scorer, then bump `rubric_version` — and never the other way
+round. Scores are only comparable within a version, and a change that alters the arithmetic makes
+old and new batches incomparable. A change that only alters routing or recording does not.
+
+Record every reviewer ruling somewhere durable the day it is made. A ruling that lives only in a
+chat thread is lost when the thread scrolls, and the next run re-decides it from scratch.

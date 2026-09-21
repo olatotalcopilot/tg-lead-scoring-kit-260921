@@ -1,0 +1,67 @@
+{
+ "P1": {
+  "id": "P1",
+  "employment_history": [
+   {
+    "organization_name": "Acme Consulting",
+    "start_date": "2019-04-01",
+    "end_date": null
+   }
+  ]
+ },
+ "P2": {
+  "id": "P2",
+  "employment_history": [
+   {
+    "organization_name": "Bridgeway Staffing",
+    "start_date": "2019-04-01",
+    "end_date": null
+   }
+  ]
+ },
+ "P3": {
+  "id": "P3",
+  "employment_history": [
+   {
+    "organization_name": "Offshore Delivery Co",
+    "start_date": "2019-04-01",
+    "end_date": null
+   }
+  ]
+ },
+ "P4": {
+  "id": "P4",
+  "employment_history": [
+   {
+    "organization_name": "Northwind Fabrication",
+    "start_date": "2019-04-01",
+    "end_date": null
+   }
+  ]
+ },
+ "P5": {
+  "id": "P5",
+  "employment_history": [
+   {
+    "organization_name": "Quietbrook Advisors",
+    "start_date": "2019-04-01",
+    "end_date": null
+   }
+  ]
+ },
+ "P6": {
+  "id": "P6",
+  "employment_history": [
+   {
+    "organization_name": "Legacy Holdings Group",
+    "start_date": "2019-04-01",
+    "end_date": "2025-11-30"
+   },
+   {
+    "organization_name": "Bright Harbor Analytics",
+    "start_date": "2025-12-01",
+    "end_date": null
+   }
+  ]
+ }
+}

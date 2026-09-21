@@ -1,0 +1,7 @@
+contact_id,person_id,new_title,new_company,domain,emp,rev,industry,country,email,email_status,seniority,hq_country
+C1,P1,Founder & CEO,Acme Consulting,acme-consulting.test,30,4000000,management consulting,United States,dana@acme-consulting.test,verified,c_suite,United States
+C2,P2,Chief Executive Officer,Bridgeway Staffing,bridgeway-staffing.test,45,8000000,staffing & recruiting,United States,miguel@bridgeway-staffing.test,verified,c_suite,United States
+C3,P3,Chief Executive Officer,Offshore Delivery Co,offshore-delivery.test,80,9000000,computer software,United States,priya@offshore-delivery.test,verified,c_suite,United States
+C4,P4,Director of Sales,Northwind Fabrication,northwind-fabrication.test,40,15000000,industrial machinery,United States,tom@northwind-fabrication.test,verified,director,United States
+C5,P5,Owner,Quietbrook Advisors,quietbrook-advisors.test,40,12000000,financial services,United States,alice@quietbrook-advisors.test,unverified,owner,United States
+C6,P6,Operations Director,,,,,,United States,,,director,

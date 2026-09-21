@@ -1,0 +1,16 @@
+{
+  "campaign": "SELFTEST_fixture",
+  "score_date": "2026-01-01",
+  "rubric_version": "v3.1",
+  "scoring_mode": "fully scored",
+  "source_list": "synthetic fixture — six fabricated contacts, no real companies",
+  "paths": {
+    "roster":    "intermediates/roster.csv",
+    "verified":  "intermediates/verified.csv",
+    "matched":   "intermediates/matched.json",
+    "offshore":  "intermediates/offshore.json",
+    "research":  "intermediates/research.txt",
+    "li_urls":   "intermediates/li-urls.json",
+    "judgments": "judgments.json"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "acme-consulting.test":        {"num": 0,  "den": 28, "pct": 0.0,  "verdict": "PASS"},
+  "bridgeway-staffing.test":     {"num": 1,  "den": 41, "pct": 2.4,  "verdict": "PASS"},
+  "offshore-delivery.test":      {"num": 62, "den": 80, "pct": 77.5, "verdict": "DISQUALIFY"},
+  "northwind-fabrication.test":  {"num": 0,  "den": 37, "pct": 0.0,  "verdict": "PASS"},
+  "quietbrook-advisors.test":    {"num": 0,  "den": 33, "pct": 0.0,  "verdict": "PASS"}
+}
