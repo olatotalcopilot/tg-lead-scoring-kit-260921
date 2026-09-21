@@ -83,7 +83,7 @@ A **run folder**, separate from this kit:
 
 | File | What it is | Who reads it |
 |---|---|---|
-| `README-FOR-HUMANS.md` | This page | You |
+| `README.md` | This page | You |
 | `AGENT-START-HERE.md` | The entry point. Tells the agent what to read, what to ask you for, how to run the batch and how to answer your questions about it | The agent, first |
 | `method/1-scoring-rubric.md` | **The rubric.** What is scored, the weights, the disqualifiers, the tiers, the routes, the review reasons. The final authority — if any other file disagrees with it, the other file is wrong | The agent; you, if you want to know why a lead scored what it did |
 | `method/2-run-playbook.md` | How a run executes: the pipeline, the non-obvious tool techniques that keep a run free, the seven gates, and the output contract | The agent |

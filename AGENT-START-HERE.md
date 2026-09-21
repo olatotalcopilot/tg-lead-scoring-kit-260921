@@ -136,7 +136,7 @@ is already in this folder:
 | Whether two batches can be compared | the rubric's *Two comparability axes* — same `rubric_version` **and** same `scoring_mode` |
 | Why a score is blank rather than zero | the rubric's *Routing* — a zero is a score someone computed, a blank is an assessment nobody made |
 | What this run did not verify | the run doc's *Known limitations* |
-| What is known to be imperfect about the method | `README-FOR-HUMANS.md`, *Known gaps and roadmap* |
+| What is known to be imperfect about the method | `README.md`, *Known gaps and roadmap* |
 
 Answer from the files, quoting the rule. If the answer genuinely is not in them, say so rather
 than inventing one, and record the question as a gap.
