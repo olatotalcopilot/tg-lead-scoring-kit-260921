@@ -55,7 +55,7 @@ import csv, json, collections, re, sys, argparse, os
 # Only major.minor reaches the data. `rubric_version` is a comparability key stamped on
 # every row, so equality on it has to mean "these rows are comparable"; letting a patch
 # bump through would split one comparable population in two for no reason.
-KIT_VERSION      = '3.2.0'
+KIT_VERSION      = '3.2.1'
 RUBRIC_SUPPORTED = 'v3.2'
 
 JUDGEMENT_KEYS = {

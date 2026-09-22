@@ -1,10 +1,56 @@
 # TG Lead Scoring Kit — read this first
 
+Everything needed to score a batch of prospects for TG Sales Agency the same way every time. You
+do not have to read the method — an AI agent reads it for you and asks you for the few things
+only you can supply.
+
+---
+
+## Start here — five steps
+
+**1. Download the kit and unzip it.** You want a folder named `TG-Lead-Scoring-Kit` with
+`AGENT-START-HERE.md` inside it.
+
+**2. Open a Claude session that has a connected folder.** Either start a new project and connect
+a folder to it, or open an existing session where a folder is already connected. The agent needs
+somewhere on your computer it can read from and write to.
+
+**3. Move the unzipped `TG-Lead-Scoring-Kit` folder into that connected folder.** Keep it whole —
+the files reference each other by name, so a loose file on its own will not work.
+
+**4. Check your tools are connected.** Apollo and web search are required. The RapidAPI *Fresh
+LinkedIn Profile Data* feed is strongly recommended; without it the whole batch is scored web-only
+and cannot be compared against batches that had it.
+
+**5. Paste this into the session:**
+
+```
+You are running a lead scoring batch for TG Sales Agency using our existing, validated method.
+
+The method is in the TG-Lead-Scoring-Kit folder in this session's connected folder. Open
+TG-Lead-Scoring-Kit/AGENT-START-HERE.md and follow it exactly, starting at Step 0.
+
+Do not design a scoring method, write a rubric, or write a scorer — all three already exist in
+that folder. Read them first, run the self-test, then tell me what you need from me and wait.
+```
+
+**What happens next.** The agent reads the method, runs a one-second self-test that costs
+nothing, and comes back asking for your list, a campaign name, where the results should go and
+what your budget is. It confirms the contact count and the expected credit spend before it spends
+anything. Then it runs the batch — pausing after the first five contacts for your sign-off — and
+hands back a CRM-ready spreadsheet plus a written record of what it did and what it could not
+verify.
+
+**If something looks wrong**, the rest of this page explains what the kit does and where each
+answer lives. You can also just ask the agent — it is told where every answer is.
+
+---
+
 | | |
 |---|---|
-| **Version** | **3.2.0** |
+| **Version** | **3.2.1** |
 | **Released** | 2026-09-22 |
-| **Title** | Parent control is recorded, not a drop |
+| **Title** | Quick-start instructions |
 | **Description** | The complete scoring method — rubric, playbook, schema, research brief, scorer and self-test — as one self-contained folder a teammate's agent can run from cold. |
 | **Stamped on every row** | `rubric_version = v3.2` |
 
@@ -25,16 +71,6 @@ a config carrying three digits and says so. The kit version is printed when a ba
 belongs in the run doc.
 
 Full lineage of the kit, the rubric and the scorer in [`VERSION-HISTORY.md`](VERSION-HISTORY.md).
-
----
-
-**What this is.** Everything needed to score a batch of prospects for TG Sales Agency the same
-way every time. Hand this folder to a teammate, point their AI agent at
-**`AGENT-START-HERE.md`**, and the agent will read the method, ask you for the few things only
-you can supply, run the batch and hand back a CRM-ready spreadsheet plus a written record of what
-it did.
-
-You do not need to read the method yourself. This page is the whole picture in a few minutes.
 
 ---
 

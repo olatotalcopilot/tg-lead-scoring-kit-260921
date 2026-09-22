@@ -29,6 +29,18 @@ runs — the kit deliberately carries no run history, and each run writes its ow
 
 ## Releases
 
+### 3.2.1 — 2026-09-22 — *Quick-start instructions*
+
+Documents only. **No rule, no arithmetic and no scored value can differ because of this release.**
+
+- The README now **opens with five numbered steps for the person running a batch**: download and
+  unzip the kit, open a session with a connected folder, move the folder into it, check the tools
+  are connected, and paste the kick-off prompt (given verbatim, ready to copy). Everything that
+  used to come first — what the kit is, how it scores — now follows the instructions.
+- The kick-off prompt names the failure mode it exists to prevent: the agent is told not to
+  design a method, write a rubric or write a scorer, because all three already exist in the
+  folder.
+
 ### 3.2.0 — 2026-09-22 — *Parent control is recorded, not a drop*
 
 **Parent control no longer disqualifies a lead, and no longer routes one to Review.** A company
