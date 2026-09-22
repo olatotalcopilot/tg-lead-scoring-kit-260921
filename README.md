@@ -1,5 +1,33 @@
 # TG Lead Scoring Kit — read this first
 
+| | |
+|---|---|
+| **Version** | **3.1.1** |
+| **Released** | 2026-09-22 |
+| **Title** | Repo conventions and synced versioning |
+| **Description** | The complete scoring method — rubric, playbook, schema, research brief, scorer and self-test — as one self-contained folder a teammate's agent can run from cold. |
+| **Stamped on every row** | `rubric_version = v3.1` |
+
+**One version line covers the kit and the rubric.** They used to be numbered separately; they
+are not separate things, so they are now the same number.
+
+| Digit | Bumped when | Reaches the data? |
+|---|---|---|
+| **major** | The model changes shape — a new layer, a new score. Everything needs rescoring. | yes |
+| **minor** | Anything that *can* change a number, a tier, a route or a column on some row. | yes |
+| **patch** | Nothing about any scored output can change: documents, wording, packaging, or a guard that only refuses malformed input. | **no** |
+
+Only `major.minor` is written into a row. `rubric_version` is a comparability key — the rule is
+"filter on `rubric_version` **and** `scoring_mode` before ranking anything" — so equality on it
+has to mean *these rows are comparable*. A patch bump cannot change a score by definition, so
+letting it through would split one comparable population in two for no reason. The scorer refuses
+a config carrying three digits and says so. The kit version is printed when a batch is scored and
+belongs in the run doc.
+
+Full lineage of the kit, the rubric and the scorer in [`VERSION-HISTORY.md`](VERSION-HISTORY.md).
+
+---
+
 **What this is.** Everything needed to score a batch of prospects for TG Sales Agency the same
 way every time. Hand this folder to a teammate, point their AI agent at
 **`AGENT-START-HERE.md`**, and the agent will read the method, ask you for the few things only
@@ -84,6 +112,7 @@ A **run folder**, separate from this kit:
 | File | What it is | Who reads it |
 |---|---|---|
 | `README.md` | This page | You |
+| `VERSION-HISTORY.md` | What changed in each kit release, and the rubric and scorer lineage behind it | You, when a score looks different from last time |
 | `AGENT-START-HERE.md` | The entry point. Tells the agent what to read, what to ask you for, how to run the batch and how to answer your questions about it | The agent, first |
 | `method/1-scoring-rubric.md` | **The rubric.** What is scored, the weights, the disqualifiers, the tiers, the routes, the review reasons. The final authority — if any other file disagrees with it, the other file is wrong | The agent; you, if you want to know why a lead scored what it did |
 | `method/2-run-playbook.md` | How a run executes: the pipeline, the non-obvious tool techniques that keep a run free, the seven gates, and the output contract | The agent |

@@ -103,7 +103,7 @@ The scorer will also **refuse to run** on certain inputs. These are not bugs to 
 | `judgments.json: distress[x] has no evidence` | A disqualifier with an empty reason | Same |
 | `CANNOT RUN: verified.csv carries email_status values this scorer does not map` | An unrecognised value would silently score 0 | Normalise in `verified.csv`: an upload-sourced address (Apollo "User Managed") is `unverified` |
 | `CANNOT RUN: contact … needs the snapshot-vs-live departure test` | `matched.json` was flattened or keyed by `contact_id` | Keep the raw people-match responses keyed by `person_id` with `employment_history` intact |
-| `This scorer implements v3.1; config asks for …` | A version mismatch | Do not relabel scores to make it pass |
+| `This scorer implements v3.1; config asks for …` | A version mismatch | Do not relabel scores to make it pass. If the config carries three digits, drop the third: `rubric_version` is major.minor only, and the patch digit belongs in the run doc |
 
 ---
 

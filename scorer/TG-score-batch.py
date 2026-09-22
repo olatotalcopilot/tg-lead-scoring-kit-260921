@@ -47,6 +47,15 @@ Two prose columns, with strictly separate jobs — keep them separate:
 """
 import csv, json, collections, re, sys, argparse, os
 
+# Kit and rubric share one version line: major.minor.patch.
+#   major  the model changes shape — a new layer or score; everything needs rescoring
+#   minor  anything that CAN change a number, a tier, a route or a column on some row
+#   patch  nothing about any scored output can change — documents, packaging, or a guard
+#          that only refuses malformed input
+# Only major.minor reaches the data. `rubric_version` is a comparability key stamped on
+# every row, so equality on it has to mean "these rows are comparable"; letting a patch
+# bump through would split one comparable population in two for no reason.
+KIT_VERSION      = '3.1.1'
 RUBRIC_SUPPORTED = 'v3.1'
 
 JUDGEMENT_KEYS = {
@@ -360,8 +369,15 @@ def main():
     MODE       = cfg['scoring_mode']          # 'fully scored' | 'scored without Linkedin API access'
     P          = cfg.get('paths', {})
     if RUBRIC != RUBRIC_SUPPORTED:
+        extra = ''
+        if re.fullmatch(r'v?\d+\.\d+\.\d+', (RUBRIC or '').strip()):
+            extra = (f'\n\n`rubric_version` carries major.minor only — write {RUBRIC_SUPPORTED}. '
+                     f'The third digit is the kit patch level, which by definition cannot change '
+                     f'a scored value, so it must never reach a row: two batches that are '
+                     f'arithmetically identical would stop matching on the comparability key. '
+                     f'Record the kit version ({KIT_VERSION}) in the run doc instead.')
         sys.exit(f'This scorer implements {RUBRIC_SUPPORTED}; config asks for {RUBRIC}. '
-                 f'Update the scorer deliberately — do not silently relabel scores.')
+                 f'Update the scorer deliberately — do not silently relabel scores.{extra}')
 
     path = lambda k, d: P.get(k, d)
     J        = json.load(open(path('judgments','judgments.json')))
@@ -664,6 +680,9 @@ def main():
         w = csv.DictWriter(fh, fieldnames=list(out[0].keys())); w.writeheader(); w.writerows(out)
 
     c = collections.Counter
+    # The kit version is not a column — it cannot be, since a patch bump must not change a
+    # row. It is printed so the run doc can record which build produced the file.
+    print(f'kit {KIT_VERSION} · rubric {RUBRIC} · scoring_mode "{MODE}"')
     print(f'wrote {name} — {len(out)} rows')
     print('route:        ', dict(c(x['route'] for x in out)))
     print('review_reason:', dict(c(x['review_reason'] for x in out if x['route']=='Review')))

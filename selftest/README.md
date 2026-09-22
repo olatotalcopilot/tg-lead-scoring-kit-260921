@@ -23,9 +23,10 @@ The fixture deliberately exercises six outcomes:
 | C5 Quietbrook Advisors | Review — `not_researched`; also the batch's `holdout` row |
 | C6 Legacy Holdings Group | Snapshot departure caught from employment history |
 
-The script then makes five broken copies and checks the scorer refuses each one: a hedged hard
-disqualifier, an empty hard disqualifier, an `email_status` the scorer does not map, and a
-`matched.json` that cannot answer the departure test.
+The script then makes six broken copies and checks the scorer refuses each one: a hedged hard
+disqualifier, an empty hard disqualifier, an `email_status` the scorer does not map, a patch
+digit in `rubric_version` (which must carry major.minor only), a rubric version the scorer does
+not implement, and a `matched.json` that cannot answer the departure test.
 
 The fixture is also the fastest way to see what every pipeline file looks like when it is
 correct — read it alongside `scorer/file-formats.md`.

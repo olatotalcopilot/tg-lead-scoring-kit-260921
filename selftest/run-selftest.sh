@@ -50,6 +50,14 @@ sed -i 's/,verified,c_suite,United States/,User Managed,c_suite,United States/' 
     "$TMP/email/intermediates/verified.csv"
 check "refuses an unmapped email_status" "CANNOT RUN: verified.csv" 1 "$TMP/email"
 
+cp -R "$HERE" "$TMP/patchver"
+sed -i 's/"rubric_version": "v3.1"/"rubric_version": "v3.1.1"/' "$TMP/patchver/run-config.json"
+check "refuses a patch digit in rubric_version" "major.minor only" 1 "$TMP/patchver"
+
+cp -R "$HERE" "$TMP/wrongver"
+sed -i 's/"rubric_version": "v3.1"/"rubric_version": "v3.2"/' "$TMP/wrongver/run-config.json"
+check "refuses a rubric version it does not implement" "This scorer implements" 1 "$TMP/wrongver"
+
 cp -R "$HERE" "$TMP/flat"
 python3 - "$TMP/flat/intermediates/matched.json" <<'PY'
 import json,sys
