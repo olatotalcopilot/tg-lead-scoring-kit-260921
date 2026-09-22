@@ -1,6 +1,6 @@
 # TG Sales Agency — Lead Scoring Run Playbook
 
-*How to execute a scoring run. Rubric v3.1.*
+*How to execute a scoring run. Rubric v3.2.*
 
 This is the **how**. It deliberately does not restate the scoring model or the field list — those
 live in one place each, and copying them is what causes version drift.
@@ -288,7 +288,7 @@ referenced by name in code.
 | Holdout empty | Review flags applied before reserving it | Gate 3 |
 | Two rubric copies drift apart | Method embedded in a prompt | This kit references, never restates |
 | 21 job changes, 5 real | Org-name comparison | Use employment history |
-| A long-settled subsidiary passes | Deal-age window instead of operational evidence | The rubric's parent-control test |
+| A subsidiary with its own sales team is dropped | Parent control treated as a disqualifier | The rubric's parent-control finding: record it, work the lead |
 | A named company carries a disqualification nobody made | Hedged or empty evidence in a structured field | Gate 7, plus the scorer's refusal to run on hedged evidence |
 | A competitor ships as Work | The call was made in a note and never written to the field | Gate 7 |
 | "No LinkedIn page" that has one | `get-company-by-domain` false negative | Always retry by URL |

@@ -1,7 +1,7 @@
 {
   "campaign": "SELFTEST_fixture",
   "score_date": "2026-01-01",
-  "rubric_version": "v3.1",
+  "rubric_version": "v3.2",
   "scoring_mode": "fully scored",
   "source_list": "synthetic fixture — six fabricated contacts, no real companies",
   "paths": {

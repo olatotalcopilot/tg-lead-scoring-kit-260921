@@ -1,6 +1,26 @@
 {
-  "acme-consulting.test":       {"url": "https://www.linkedin.com/company/acme-consulting/", "source": "Get_Company_by_Domain"},
-  "bridgeway-staffing.test":    {"url": "https://www.linkedin.com/company/bridgeway-staffing/", "source": "Get_Company_by_Domain"},
-  "offshore-delivery.test":     {"url": "https://www.linkedin.com/company/offshore-delivery-co/", "source": "Get_Company_by_URL"},
-  "northwind-fabrication.test": {"url": "https://www.linkedin.com/company/northwind-fabrication-inc./", "source": "Get_Company_by_Domain"}
+ "acme-consulting.test": {
+  "url": "https://www.linkedin.com/company/acme-consulting/",
+  "source": "Get_Company_by_Domain"
+ },
+ "bridgeway-staffing.test": {
+  "url": "https://www.linkedin.com/company/bridgeway-staffing/",
+  "source": "Get_Company_by_Domain"
+ },
+ "offshore-delivery.test": {
+  "url": "https://www.linkedin.com/company/offshore-delivery-co/",
+  "source": "Get_Company_by_URL"
+ },
+ "northwind-fabrication.test": {
+  "url": "https://www.linkedin.com/company/northwind-fabrication-inc./",
+  "source": "Get_Company_by_Domain"
+ },
+ "harborline-instruments.test": {
+  "url": "https://www.linkedin.com/company/harborline-instruments/",
+  "source": "Get_Company_by_Domain"
+ },
+ "meadowgate-systems.test": {
+  "url": "https://www.linkedin.com/company/meadowgate-systems/",
+  "source": "Get_Company_by_Domain"
+ }
 }

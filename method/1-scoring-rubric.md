@@ -1,6 +1,6 @@
 # TG Sales Agency — Dual Lead Scoring Rubric
 
-**`rubric_version` = `v3.1`**
+**`rubric_version` = `v3.2`**
 **Scores:** Proven-Fit Score (`proven_fit_score`) · Ideal-Fit Score (`ideal_fit_score`)
 
 This document owns **what to score, the weights, the disqualifiers, the tiers, the routes and
@@ -210,6 +210,13 @@ a batch:
 rubric over time; `scoring_mode` guards against comparing a LinkedIn-assessed score with a
 web-only one. Always filter on both before ranking or comparing.
 
+*Documented exception — v3.1 and v3.2 scores are directly comparable.* Layers 1–3 are
+arithmetically identical across the two; v3.2 changed only what happens to a lead once it is
+scored. So a `v3.1` row and a `v3.2` row of the same `scoring_mode` may be ranked together. Their
+**`route` values may not be compared**: a company with a strategic parent was disqualified under
+v3.1 and is worked under v3.2, so any count of drops, or any filter on `route`, has to be taken
+one version at a time.
+
 **Unresearched rows are not low-scoring rows.** If Layer 3 never ran for a lead — no domain on
 record, research budget exhausted, an upstream disqualification short-circuited the pipeline —
 the resulting total is **not a score**, because up to 45 points were never contestable. Such
@@ -248,9 +255,9 @@ redoing the research. **Ownership never adds or subtracts points** — it decide
 | `INDEPENDENT` | No parent, no sponsor | Score and route normally |
 | `PE_BACKED` | Financial sponsor — growth equity, buyout, recapitalisation | Score and route normally. A recap in the **last ~18 months** routes to Review (spend can be frozen or redirected while new owners set direction). |
 | `SERIAL_ACQUIRER` | Decentralised permanent-holding acquirer that runs units autonomously (Constellation Software / Volaris, Valsoft and similar) | Score and route normally — these behave like financial owners, not strategic parents |
-| `ACQUIRED_RECENT` | Acquired by a **strategic** parent, ≤24 months | Apply the parent-control test |
-| `ACQUIRED_OLD` | Acquired by a **strategic** parent, >24 months | Apply the parent-control test |
-| `SUBSIDIARY` | Operates as a unit of a **strategic** parent, date unknown or immaterial | Apply the parent-control test |
+| `ACQUIRED_RECENT` | Acquired by a **strategic** parent, ≤24 months | Score and route normally; record the parent finding — see below |
+| `ACQUIRED_OLD` | Acquired by a **strategic** parent, >24 months | Score and route normally; record the parent finding |
+| `SUBSIDIARY` | Operates as a unit of a **strategic** parent, date unknown or immaterial | Score and route normally; record the parent finding |
 | `UNKNOWN` | Could not be determined | Route to Review if otherwise Qualified+ |
 
 A prefix with no supporting detail ships as the bare verdict (`INDEPENDENT`), never as
@@ -263,30 +270,48 @@ better prospect is already instrumented in Layer 3A — sales hiring (10 pts), g
 language including funding (5 pts), and messy-middle evidence (5 pts). A company running the
 post-investment growth playbook lights up those criteria on observable evidence. A separate
 ownership bonus would pay twice for the same fact, and would also fire for cost-cutting recaps
-that show none of those signals — precisely the cases where the thesis does not hold. Ownership
-therefore routes; Layer 3 scores.
+that show none of those signals — precisely the cases where the thesis does not hold. Layer 3
+scores; ownership is recorded for the human who works the row.
 
-### The parent-control test
+### The parent-control finding
 
-**Deal age is not the test. Operational control is.** Ask: *is there observable evidence that
-the parent runs this company's hiring, procurement, or web presence?*
+**Parent control is recorded, not routed. It never disqualifies and it never sends a row to
+Review.** A company owned by a strategic parent still has its own brand, its own sales team, its
+own P&L and a budget it can spend. Where the parent sits in its buying is a question for the
+conversation, not a reason to skip the conversation.
 
-- **Operationally confirmed → disqualify, at any deal age.** The careers page or ATS redirects
-  to the parent · job requisitions are posted by parent legal entities · the company domain
-  redirects to the parent · the brand is retired or fully folded into the parent's. These are
-  facts about process, not structure.
-- **Inferred from branding only → Review**, if the lead is otherwise Qualified+ on either score.
-  "X, an Acme company" in a LinkedIn name or an About page is a marketing statement, not a
-  procurement fact. The company may well still buy independently.
-- **Otherwise below Qualified → disqualify.** A human's attention is the scarce resource; don't
-  spend it on a lead that would not be worked even if the ownership concern evaporated.
+**Why it does not disqualify.** The bar for a hard disqualifier is that a company be
+*un-sellable* — no web presence, a competitor, out of business. Each of those is directly
+observed. Parent control is an *inference* about where a decision sits, drawn from process
+evidence rather than from the decision itself. The cost asymmetry settles it: a false drop loses
+a Qualified prospect invisibly and permanently, while a false include costs one sequence and a
+reply saying "that goes through our parent now." A subsidiary with its own sales team is exactly
+the shape of company this rule used to throw away.
 
-**Why branding-only evidence is not a hard disqualifier.** The bar for a hard disqualifier is
-that a company be *un-sellable* — no web presence, a competitor, out of business. Each is
-directly observed. Parent control inferred from branding is an *inference* about where a
-decision sits, and the company still exists with a budget it could spend. The cost asymmetry
-reinforces this: a false drop loses a Qualified prospect invisibly and permanently, while a
-false include costs one sequence and a reply saying "that goes through our parent now."
+**Why it does not route to Review either.** The Review question would be *does this company still
+buy independently?* — and since neither answer changes the route now, the question cannot earn a
+human's attention up front. It is answered on the call, which is where it belongs.
+
+**Still grade the evidence, because the rep needs it.** The two grades produce different wording
+in `verdict`, and both are preserved in `ownership`:
+
+- **Operationally confirmed.** The careers page or ATS redirects to the parent · job requisitions
+  are posted by parent legal entities · procurement or vendor pages point at the parent. These
+  are facts about process. The row carries **`PARENT-CONTROLLED BUYING (operational evidence)`**
+  and the instruction to establish who signs before spending a cycle on the local contact.
+- **Inferred from branding only.** "X, an Acme company" in a LinkedIn name or an About page is a
+  marketing statement, not a procurement fact. The row carries **`PARENT LINK ON RECORD (branding
+  evidence only)`** and the note that the company most likely still buys independently.
+
+**One case still disqualifies, and it is not this one.** A brand that no longer exists as a
+distinct business — the domain redirects to the parent, there is no separate site, the brand is
+retired — fails the **no discoverable web presence** test. That is a different finding from
+"buying routes through a parent", it is recorded by research as such, and it does not need a
+parent-control judgement to fire.
+
+**Every parent finding must reach `ownership`.** Since nothing about it changes a route, that
+column is the only durable record that the caveat existed. The scorer raises a violation on a row
+whose verdict states a parent finding that `ownership` does not carry.
 
 ### Financial sponsors are not strategic parents
 
@@ -326,19 +351,22 @@ A lead is disqualified if any is true:
   business (an insurance broker with an HR-consulting arm, say) is not. Decide the boundary
   cases explicitly in `judgments.json` and say which way and why — do not leave them flagged.
 - It shows clear distress (layoffs, closure, winding down).
-- Its buying is **operationally controlled** by a strategic parent — see *The parent-control
-  test*. Branding-only evidence routes to Review instead.
 - **Offshore workforce concentration >5%** — more than 5% of the company's indexed employees are
   located in typical offshore-delivery countries (India, Philippines, Pakistan, Bangladesh, Sri
   Lanka, Vietnam, Indonesia, and similar).
 
-**A hard disqualifier must be asserted, not hedged.** The scorer states a disqualification
-unqualified in `verdict` ("COMPETITOR — ..."), so a hedge in the evidence is erased and a named
-company carries an allegation nobody actually made. Evidence too thin to state plainly is too
-thin to disqualify on: establish it, or drop the disqualifier and let the score carry the
+**Note that parent control is no longer on this list** — see *The parent-control finding*. A
+company whose buying runs through a parent is still sellable; it is worked, with the finding
+stated in `verdict` and `ownership`.
+
+**A claim the CSV states flatly must be asserted, not hedged.** The scorer writes "COMPETITOR —",
+"DISTRESS —" and "PARENT-CONTROLLED BUYING (operational evidence) —" unqualified, so a hedge in
+the evidence is erased and a named company carries a claim nobody actually made. Evidence too
+thin to state plainly is too thin to assert: establish it, or drop it and let the score carry the
 judgement. The scorer refuses to run on an empty `competitor`, `distress` or
 `parent_control_confirmed` judgement, or on one whose opening clause hedges — that is a tripwire
-for the obvious cases, not a proof, so read the entries as well.
+for the obvious cases, not a proof, so read the entries as well. `parent_control_inferred` is
+exempt, because it is worded as the weaker claim and a qualified reading of it is honest.
 
 **Why TG has the offshore rule.** An offshore-heavy company already runs an offshore labour pool
 and the management model to direct it, so it can staff the warm and cold outreach TG sells **more
@@ -462,7 +490,6 @@ call.
 
 | `review_reason` | Trigger | What the reviewer decides |
 |---|---|---|
-| `unconfirmed_independent_buying_authority` | Strategic parent, branding evidence only | Does this company still buy independently? |
 | `pe_recent_recap` | Financial sponsor, recap ≤18 months | Does the desk evidence show the company still spending — sales roles open, expansion news, leadership stable — or a post-recap freeze? |
 | `ownership_unknown` | Ownership could not be determined | Establish ownership, then re-route |
 | `offshore_small_sample` | Offshore % over threshold on <~15 indexed employees | Is the ratio real or a sampling artefact? |

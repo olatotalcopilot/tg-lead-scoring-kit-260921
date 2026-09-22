@@ -29,6 +29,46 @@ runs — the kit deliberately carries no run history, and each run writes its ow
 
 ## Releases
 
+### 3.2.0 — 2026-09-22 — *Parent control is recorded, not a drop*
+
+**Parent control no longer disqualifies a lead, and no longer routes one to Review.** A company
+owned by a strategic parent is scored, routed on its merits, and worked — with the finding stated
+at the front of `verdict` and preserved in `ownership`.
+
+Why: the old rule dropped a company whose careers page redirected to its parent even when it kept
+its own brand, sales team, P&L and budget. One such company was discarded by the rule and then
+closed at several times TG's median deal. The rubric's own cost asymmetry settles it — a false
+drop loses a Qualified prospect permanently and invisibly, while a false include costs one
+sequence and a reply saying "that goes through our parent now."
+
+- **Both grades of evidence are kept, because the rep needs them**, but neither changes a route.
+  Operational evidence (careers page or ATS redirecting to the parent, requisitions posted by a
+  parent legal entity) produces `PARENT-CONTROLLED BUYING (operational evidence)` plus the
+  instruction to establish who signs early. Branding evidence ("X, an Acme company") produces
+  `PARENT LINK ON RECORD (branding evidence only)` and the note that the company most likely
+  still buys independently.
+- **`review_reason = unconfirmed_independent_buying_authority` is retired.** Its question — *does
+  this company still buy independently?* — no longer changes the route whichever way it is
+  answered, so it cannot earn a human's attention up front. It stays in the schema enum so
+  historical rows remain readable; nothing emits it.
+- **One ownership case still disqualifies, and it is a different one.** A brand that no longer
+  exists as a distinct business — domain redirects to the parent, no separate site — fails the
+  existing **no discoverable web presence** test. Research records it as that.
+- **A new invariant.** Since the finding changes no route, `ownership` is its only durable
+  record. The scorer raises a violation on any row whose `verdict` states a parent finding that
+  `ownership` does not carry.
+- The self-test fixture gained two parent-controlled companies, one per evidence grade, both
+  routing Work.
+
+**Comparability: v3.1 and v3.2 scores are directly comparable.** Layers 1–3 are arithmetically
+identical; only what happens to a scored lead changed. **Their `route` values are not
+comparable** — a company with a strategic parent was Disqualified under v3.1 and is Worked under
+v3.2 — so any count of drops, or any filter on `route`, must be taken one version at a time.
+
+*Follow-up, not included here:* batches scored before 3.2.0 still carry parent-control drops.
+They were disqualified under a rule that no longer exists and are worth re-examining; it is a
+query against CSVs already held, not a re-run. Tracked as roadmap item 1.
+
 ### 3.1.1 — 2026-09-22 — *Repo conventions and synced versioning*
 
 Packaging, documents and one guard. **No rule and no arithmetic changed, and no scored value can
@@ -79,9 +119,14 @@ seen it.
 Reconstructed from the project's own records. Dates before 3.1.0 are as recorded at the time;
 where a record gave only a month, the month is what appears here.
 
+### v3.2 — 2026-09-22 — *Parent control is recorded, not a drop*
+
+Current. Shipped in kit 3.2.0; see that release above for the change and its rationale. Layers
+1–3 are unchanged from v3.1, so scores are comparable across the two and routes are not.
+
 ### v3.1 — Jul 2026 — *Ownership rules rewritten; disqualified rows keep their scores*
 
-Current. Five changes, all concerning what happens to a lead rather than how it is scored:
+Five changes, all concerning what happens to a lead rather than how it is scored:
 
 1. Strategic parent control disqualifies at **any** deal age, but only on *operational* evidence
    — a careers page or ATS redirecting to the parent, requisitions posted by parent legal
@@ -141,6 +186,7 @@ separates little. That finding is why the weights are what they are and has not 
 
 | Build | Shipped in | What changed |
 |---|---|---|
+| **3.2.0 build** | 3.2.0 | Parent control neither disqualifies nor routes; the finding is written to `verdict` and `ownership`, and a new invariant checks it survives. The hedge guard now covers `parent_control_confirmed` as a flatly-stated claim rather than as a disqualifier. |
 | **Kit build** | 3.1.0 | Refuses to run on an `email_status` value it does not map, naming the required normalisation, instead of silently scoring it 0 — which cost 4 or 8 Layer 2 points on every row carrying one. Run-specific commentary rewritten as general rules; no arithmetic touched. |
 | **Sep 2026, later** | pre-kit | Refuses to run on an empty `competitor`, `distress` or `parent_control_confirmed` judgement, or on one whose opening clause hedges, because the CSV states a disqualification unqualified and would erase the hedge. Establishes up front whether `matched.json` can answer the departure test and stops with a named error rather than answering "this person left" for everyone. Emits a bare `INDEPENDENT` rather than a trailing-colon `INDEPENDENT:`. Reads `li-urls.json` into `li_company`. |
 | **Sep 2026, earlier** | pre-kit | Europe and the Middle East score their proper geography band instead of collapsing to 0. Unknown company size scores 0 rather than falling through to the small-company 8. The B2C penalty actually zeroes company type and industry instead of only announcing itself. Unresearched and no-firmographics rows route to Review instead of reading as low scores. `ownership_unknown` became reachable. `route` constrained to its three enum values. The holdout is reserved from the pre-flag population. A Proven-Fit Hot row without a verified email raises a violation rather than being silently retiered. |

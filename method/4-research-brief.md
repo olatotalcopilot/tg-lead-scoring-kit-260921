@@ -70,12 +70,18 @@ Also record, in the same line:
 | `note` | free text | The verdict a human reads. Say what you checked, what you could not verify, and which reading you took where the rubric's bands overlap. |
 | `urls` | semicolon-separated | Evidence links backing the claims above. |
 
-**Ownership: decide, do not describe.** "X, an Acme company" on an About page is branding, which
-routes to Review. A careers page or ATS that redirects to the parent, requisitions posted by a
-parent legal entity, or a domain that redirects to the parent are operational facts, which
-disqualify. Say which of those you saw. A holding company on the About page is not by itself an
-acquisition — check whether the unit still has its own leadership and its own careers page, and
-if it does, it is a `SERIAL_ACQUIRER` or `PE_BACKED` case, scored normally.
+**Ownership: say what you saw, and grade it.** A parent relationship never disqualifies and
+never routes — it is recorded — but the *grade* of evidence changes what the rep is told, so be
+precise. **Operational evidence** is a careers page or ATS that redirects to the parent,
+requisitions posted by a parent legal entity, or procurement pages pointing at the parent: facts
+about process. **Branding evidence** is "X, an Acme company" on an About page or in a LinkedIn
+name: a marketing statement. Record which you saw, in those terms. A holding company on the About
+page is not by itself an acquisition — check whether the unit still has its own leadership and
+its own careers page, and if it does, it is a `SERIAL_ACQUIRER` or `PE_BACKED` case.
+
+**The one ownership finding that does disqualify** is a brand that no longer exists as a distinct
+business: the domain redirects to the parent, there is no separate site. Record that as the
+absence of a web presence, which is what it is — not as a parent-control note.
 
 ---
 

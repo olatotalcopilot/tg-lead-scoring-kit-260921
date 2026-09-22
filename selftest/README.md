@@ -1,6 +1,6 @@
 # Self-test
 
-Six fabricated contacts and a complete set of intermediates. **No real companies, no real
+Eight fabricated contacts and a complete set of intermediates. **No real companies, no real
 people, no network calls, no credits.** Every `.test` domain is reserved and resolves nowhere.
 
 ```
@@ -22,6 +22,8 @@ The fixture deliberately exercises six outcomes:
 | C4 Northwind Fabrication | Review — `contact_left_company`; contact scores blank and `Invalid`, **company scores stay real at 82/78** |
 | C5 Quietbrook Advisors | Review — `not_researched`; also the batch's `holdout` row |
 | C6 Legacy Holdings Group | Snapshot departure caught from employment history |
+| C7 Harborline Instruments | Parent-controlled on **operational** evidence — route Work, finding stated in `verdict` and `ownership` |
+| C8 Meadowgate Systems | Parent link on **branding** evidence only — route Work, weaker wording |
 
 The script then makes six broken copies and checks the scorer refuses each one: a hedged hard
 disqualifier, an empty hard disqualifier, an `email_status` the scorer does not map, a patch

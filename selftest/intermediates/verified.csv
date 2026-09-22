@@ -5,3 +5,5 @@ C3,P3,Chief Executive Officer,Offshore Delivery Co,offshore-delivery.test,80,900
 C4,P4,Director of Sales,Northwind Fabrication,northwind-fabrication.test,40,15000000,industrial machinery,United States,tom@northwind-fabrication.test,verified,director,United States
 C5,P5,Owner,Quietbrook Advisors,quietbrook-advisors.test,40,12000000,financial services,United States,alice@quietbrook-advisors.test,unverified,owner,United States
 C6,P6,Operations Director,,,,,,United States,,,director,
+C7,P7,Founder & CEO,Harborline Instruments,harborline-instruments.test,45,14000000,industrial machinery,United States,grace@harborline-instruments.test,verified,c_suite,United States
+C8,P8,President,Meadowgate Systems,meadowgate-systems.test,60,18000000,industrial machinery,United States,ravi@meadowgate-systems.test,verified,c_suite,United States

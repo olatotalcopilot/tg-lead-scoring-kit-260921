@@ -13,7 +13,7 @@ read-only input: a run writes its output somewhere else.
 
 Read these in full, in this order, before anything else:
 
-1. `method/1-scoring-rubric.md` — the dual-score rubric (**v3.1**). Every layer, weight,
+1. `method/1-scoring-rubric.md` — the dual-score rubric (**v3.2**). Every layer, weight,
    disqualifier, tier, route and review reason. **This file wins over every other file.**
 2. `method/2-run-playbook.md` — how a run executes: pipeline, tool methods, gates, output
    contract.
@@ -27,7 +27,7 @@ Then run the self-test. It uses fabricated data, makes no network calls and cost
 bash selftest/run-selftest.sh          # expect: SELFTEST PASSED
 ```
 
-Then reply with one line — `loaded rubric v3.1 + playbook, selftest passed, ready` — plus
+Then reply with one line — `loaded rubric v3.2 + playbook, selftest passed, ready` — plus
 anything in the method that looks stale or self-contradictory, and **wait for the user.**
 
 Do **not** produce a rubric, a field-setup guide or a scoring script as a deliverable. Earlier
@@ -103,7 +103,7 @@ The scorer will also **refuse to run** on certain inputs. These are not bugs to 
 | `judgments.json: distress[x] has no evidence` | A disqualifier with an empty reason | Same |
 | `CANNOT RUN: verified.csv carries email_status values this scorer does not map` | An unrecognised value would silently score 0 | Normalise in `verified.csv`: an upload-sourced address (Apollo "User Managed") is `unverified` |
 | `CANNOT RUN: contact … needs the snapshot-vs-live departure test` | `matched.json` was flattened or keyed by `contact_id` | Keep the raw people-match responses keyed by `person_id` with `employment_history` intact |
-| `This scorer implements v3.1; config asks for …` | A version mismatch | Do not relabel scores to make it pass. If the config carries three digits, drop the third: `rubric_version` is major.minor only, and the patch digit belongs in the run doc |
+| `This scorer implements v3.2; config asks for …` | A version mismatch | Do not relabel scores to make it pass. If the config carries three digits, drop the third: `rubric_version` is major.minor only, and the patch digit belongs in the run doc |
 
 ---
 

@@ -2,11 +2,11 @@
 
 | | |
 |---|---|
-| **Version** | **3.1.1** |
+| **Version** | **3.2.0** |
 | **Released** | 2026-09-22 |
-| **Title** | Repo conventions and synced versioning |
+| **Title** | Parent control is recorded, not a drop |
 | **Description** | The complete scoring method — rubric, playbook, schema, research brief, scorer and self-test — as one self-contained folder a teammate's agent can run from cold. |
-| **Stamped on every row** | `rubric_version = v3.1` |
+| **Stamped on every row** | `rubric_version = v3.2` |
 
 **One version line covers the kit and the rubric.** They used to be numbered separately; they
 are not separate things, so they are now the same number.
@@ -64,9 +64,11 @@ two scores), **reachability** (15), **research signals** from the web and Linked
 unreliable.
 
 Separately, a short list of **hard disqualifiers** removes leads that cannot or will not buy: no
-web presence, a competitor, visible distress, buying controlled by a parent company, or a
-workforce concentrated offshore. A disqualified lead **keeps its real scores** — the `route`
-column records the drop, so nothing is hidden and a decision can be reversed.
+web presence, a competitor, visible distress, or a workforce concentrated offshore. A company
+owned by a parent is **not** dropped — that finding is recorded in the row and the lead is worked,
+because a subsidiary with its own sales team still has a budget it can spend. A disqualified lead
+**keeps its real scores** — the `route` column records the drop, so nothing is hidden and a
+decision can be reversed.
 
 Every row comes out with a route — **Work**, **Review** or **Disqualified** — and a plain-English
 `verdict` saying why, so a rep or a reviewer never has to reconstruct the reasoning.
@@ -96,7 +98,7 @@ run on — put bulk research on a cheap tier and reserve the expensive one for s
 
 A **run folder**, separate from this kit:
 
-- **`TG-scored-full-<campaign>-v3.1.csv`** — the deliverable. One row per contact, ~60 columns:
+- **`TG-scored-full-<campaign>-v3.2.csv`** — the deliverable. One row per contact, ~60 columns:
   both scores, both tiers, company-level scores, the route, the reason, the evidence links, and
   every input that fed the score.
 - **`TG-run-<campaign>.md`** — the run doc. Counts by route, every disqualification with its
@@ -139,11 +141,10 @@ blocks a run; all of it is worth knowing before you read a number too confidentl
 
 ### Known gaps in the method
 
-1. **The parent-control disqualifier produces false drops.** A company whose careers page
-   redirects to its parent is dropped even when it has its own brand, sales team, P&L and
-   budget. At least one such company was dropped by the rule and then closed as a deal worth
-   several times TG's median. **This is the next change** — see the roadmap below. Until it
-   ships, the rule stands as written: operational evidence disqualifies at any deal age.
+1. **Parent-controlled leads have not been measured yet.** As of 3.2.0 they are worked rather
+   than dropped, which is the right call on the evidence — one such company closed at several
+   times TG's median deal after the old rule would have discarded it — but nobody yet knows what
+   share of them reply "that goes through our parent now." Worth counting after a batch or two.
 2. **A Proven-Fit Hot row without a verified email stops the run.** The rubric requires a
    verified email for Proven-Fit Hot, but capping such a row at Qualified would be a tiering
    change the rubric does not state. So the scorer flags it and a human decides — every run,
@@ -182,7 +183,7 @@ blocks a run; all of it is worth knowing before you read a number too confidentl
 
 | # | Item | Why it matters |
 |---|---|---|
-| 1 | **Parent-controlled companies stop being disqualified.** Instead the finding is surfaced in `verdict` and `ownership` and the lead is worked. Ships as a point release with its own version number | Recovers confirmed false drops; the largest known loss in the method |
+| 1 | **Re-examine parent-control drops in batches scored before 3.2.0.** They were disqualified under a rule that no longer exists; each is a Qualified-or-better lead sitting in a CSV | A cheap query against CSVs already held. Sizes what the old rule cost, and puts recoverable leads back in play |
 | 2 | Settle the Proven-Fit Hot / verified-email question into a standing rule | Removes a stop that recurs on every run |
 | 3 | Reserve the holdout by random sample before routing | Makes forward validation of the research layer possible at all |
 | 4 | Encode the subjective judgements, the competitor-rule boundary and the unassessed industries as rules | One workstream, not three tickets; ends the per-run re-decision |

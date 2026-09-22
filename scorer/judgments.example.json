@@ -1,5 +1,5 @@
 {
-  "_comment": "Every human call in the run, in one file. This is the ONLY file that should differ run to run. Delete this key before running - unknown keys are a hard error. Every key below is optional.",
+  "_comment": "Every human call in the run, in one file. This is the ONLY file that should differ run to run. Delete this key before running - unknown keys are a hard error. Every key below is optional. NOTE: parent_control_confirmed and parent_control_inferred neither disqualify nor route - they are recorded in ownership and stated at the front of verdict.",
 
   "competitor": {
     "example-staffing.com": "Core business is contract staffing and direct placement; the careers page and the services page both sell recruiting and staff augmentation."

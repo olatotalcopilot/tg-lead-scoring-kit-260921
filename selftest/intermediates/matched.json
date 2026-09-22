@@ -63,5 +63,25 @@
     "end_date": null
    }
   ]
+ },
+ "P7": {
+  "id": "P7",
+  "employment_history": [
+   {
+    "organization_name": "Harborline Instruments",
+    "start_date": "2019-04-01",
+    "end_date": null
+   }
+  ]
+ },
+ "P8": {
+  "id": "P8",
+  "employment_history": [
+   {
+    "organization_name": "Meadowgate Systems",
+    "start_date": "2019-04-01",
+    "end_date": null
+   }
+  ]
  }
 }

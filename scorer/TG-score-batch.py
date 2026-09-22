@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TG Sales Agency — batch scorer. Rubric v3.1.
+"""TG Sales Agency — batch scorer. Rubric v3.2.
 
 Reusable across runs. The scoring MATH lives here and must not be re-derived by hand;
 the per-run HUMAN JUDGEMENT lives in judgments.json. Change the judgements, not this file.
@@ -55,14 +55,15 @@ import csv, json, collections, re, sys, argparse, os
 # Only major.minor reaches the data. `rubric_version` is a comparability key stamped on
 # every row, so equality on it has to mean "these rows are comparable"; letting a patch
 # bump through would split one comparable population in two for no reason.
-KIT_VERSION      = '3.1.1'
-RUBRIC_SUPPORTED = 'v3.1'
+KIT_VERSION      = '3.2.0'
+RUBRIC_SUPPORTED = 'v3.2'
 
 JUDGEMENT_KEYS = {
     'parent_control_confirmed': 'domain -> reason. Operational evidence the parent runs hiring/'
-                        'procurement/web presence. Disqualifies at ANY deal age.',
+                        'procurement/web presence. Does NOT disqualify and does NOT route: it is '
+                        'recorded in `ownership` and stated at the front of `verdict`.',
     'parent_control_inferred':  'domain -> reason. Branding evidence only ("X, an Acme company"). '
-                        'Routes to Review if otherwise Qualified+, else disqualifies.',
+                        'Same treatment, worded as the weaker claim it is.',
     'serial_acquirer':  'domain -> reason. Decentralised permanent holders (Constellation/'
                         'Volaris, Valsoft). Scored normally, like a financial sponsor.',
     'pe_recent':        'domain -> reason. Financial sponsor, recap within ~18 months -> Review.',
@@ -124,7 +125,7 @@ PUBLIC_MAIL = {'gmail.com','yahoo.com','hotmail.com','outlook.com','aol.com',
                'icloud.com','me.com','msn.com','live.com','protonmail.com'}
 
 # ───────────────────────────────────────────────────────────── scoring primitives
-# These implement TG-lead-scoring-rubric.md v3.1 Layer 1. Do not tune here without
+# These implement method/1-scoring-rubric.md Layer 1. Do not tune here without
 # bumping rubric_version — scores are only comparable within a version.
 
 def tier(s):
@@ -183,7 +184,7 @@ def deal_p(r):
 #   Ideal:  Layer1I 40 - persona 10 - size_x_title 8 = 22, + L3A 30 + L3B 15 = 67
 PC_DIVISOR, IC_DIVISOR = 73, 67
 
-# ────────────────────────────────────────────────────── snapshot vs live (v3.1)
+# ───────────────────────────────────────────────────────── snapshot vs live
 def _norm(s): return re.sub(r'[^a-z0-9]','',(s or '').lower())
 
 def _matched_supports_departure_test(matched, roster):
@@ -259,7 +260,7 @@ def _corroborated(domain, email):
                    f'looks like evidence.')
 
 def reason_of(review):
-    """Map the leading Review trigger to the review_reason enum (rubric v3.1)."""
+    """Map the leading Review trigger to the review_reason enum."""
     if not review: return ''
     s = review[0]
     for prefix, val in (
@@ -329,6 +330,14 @@ def validate(out):
         if x.get('proven_fit_tier') == 'Hot' and (x.get('verified_email_status') or '') != 'verified':
             flag('proven_fit_tier=Hot but verified_email_status=%r — the rubric requires a '
                  'verified email for Proven-Fit Hot' % x.get('verified_email_status'))
+
+        # v3.2: parent control no longer routes, so `ownership` is the ONLY durable record
+        # of it. If the verdict states the finding, the evidence has to be there too — a row
+        # worked with that caveat must be explicable later without re-doing the research.
+        if 'PARENT-CONTROLLED BUYING' in (x.get('verdict') or '') or \
+           'PARENT LINK ON RECORD' in (x.get('verdict') or ''):
+            if 'PARENT' not in (x.get('ownership') or ''):
+                flag('verdict states a parent finding but ownership does not carry it')
 
         # a caveat must not contradict the row it sits on
         if 'no domain on record' in (x.get('offshore_check') or '') and (x.get('domain') or '').strip():
@@ -429,7 +438,7 @@ def main():
         snap = (src.get('domain') or '').strip()
         left_snapshot = False
 
-        # v3.1 snapshot rule: a blank live organization is usually a DEPARTURE signal.
+        # Snapshot rule: a blank live organization is usually a DEPARTURE signal.
         # Only trust the snapshot domain when live employment is still open-ended.
         if not d and snap:
             answer, unanswerable = _open_ended_at(matched, src, DEPARTURE_TEST_OK)
@@ -493,8 +502,20 @@ def main():
             # primary and drives review_reason; this note trails it.
             review.append(note); caveats.append(note)
 
+        # v3.2: parent control neither disqualifies nor routes. A company whose careers page
+        # redirects to its parent still has its own brand, sales team, P&L and budget, and the
+        # cost asymmetry the rubric already states settles it: a false drop loses a Qualified
+        # prospect permanently and invisibly, while a false include costs one sequence and a
+        # reply saying "that goes through our parent now". So the finding is surfaced — in
+        # `ownership` for the record and at the FRONT of `verdict` for whoever works the row —
+        # and the lead is worked. A brand that no longer exists as a distinct business (domain
+        # redirects, no separate site) is a different case: that is the no-web-presence
+        # disqualifier, which research records, not a parent-control judgement.
+        parent_flag = ''
         if d in g('parent_control_confirmed'):
-            dq.append(f"BUYING RUNS THROUGH PARENT (operationally confirmed) — {g('parent_control_confirmed')[d]}")
+            parent_flag = ('PARENT-CONTROLLED BUYING (operational evidence) — '
+                           f"{g('parent_control_confirmed')[d]} Work it, and establish who signs "
+                           'before you spend a cycle on the local contact.')
         if d in g('distress'):    dq.append(f"DISTRESS — {g('distress')[d]}")
         if d in g('competitor'):  dq.append(f"COMPETITOR — {g('competitor')[d]}")
         if d in g('pe_recent'):   review.append(f"RECENT PE RECAP — {g('pe_recent')[d]}")
@@ -545,16 +566,19 @@ def main():
         l1p, l1i = sum(L1P.values()), sum(L1I.values())
         l2, l3a, l3b = sum(L2.values()), sum(L3A.values()), sum(L3B.values())
 
-        # v3.1: scores are always real. A disqualifier is recorded in `route`, never by zeroing.
+        # Scores are always real. A disqualifier is recorded in `route`, never by zeroing.
         Pv, Iv = l1p+l2+l3a+l3b, l1i+l2+l3a+l3b
         PC = round(100*((l1p-L1P['title'])+l3a+l3b)/PC_DIVISOR)
         IC = round(100*((l1i-L1I['persona']-L1I['size_x_title'])+l3a+l3b)/IC_DIVISOR)
 
-        # v3.1 parent-control test: branding-only evidence goes to a human when the lead is
-        # otherwise worth working, and is dropped when it is not.
-        if d in g('parent_control_inferred'):
-            if max(Pv, Iv) >= 60: review.insert(0, f"INDEPENDENT BUYING AUTHORITY UNCONFIRMED — {g('parent_control_inferred')[d]}")
-            else: dq.append(f"PARENT-CONTROLLED BUYING (branding evidence only) and below the Qualified gate — {g('parent_control_inferred')[d]}")
+        # Branding evidence gets the same treatment in a weaker voice. It used to route to
+        # Review, asking "does this company still buy independently?" — a question that no
+        # longer changes the route whichever way it is answered, and so is no longer worth a
+        # human's attention up front.
+        if not parent_flag and d in g('parent_control_inferred'):
+            parent_flag = ('PARENT LINK ON RECORD (branding evidence only) — '
+                           f"{g('parent_control_inferred')[d]} On this evidence the company most "
+                           'likely still buys independently.')
 
         # UNKNOWN ownership routes to Review when the lead is otherwise Qualified+. Gated on
         # Qualified+ for the same reason the parent-control test is: below the gate, a human's
@@ -601,6 +625,10 @@ def main():
         verdict = ' | '.join(dq) if dq else (
             (('NEEDS A HUMAN CALL: ' + ' | '.join(review) + '. ') if review else '')
             + (R['note'] if R else 'Not researched.'))
+        # The parent finding leads the verdict on a row that is still in play. On a row dropped
+        # for some other reason it trails, so the disqualifier stays the headline.
+        if parent_flag:
+            verdict = (verdict + ' ' + parent_flag) if dq else (parent_flag + ' ' + verdict)
         if b2c_note: verdict += ' ' + b2c_note
 
         # `PREFIX: detail` — but a blank detail must not ship as a bare "INDEPENDENT:".
@@ -613,6 +641,18 @@ def main():
                      else _own('PE_BACKED', g('pe_backed')[d]) if d in g('pe_backed')
                      else _own('PE_BACKED', g('pe_recent')[d]) if d in g('pe_recent')
                      else (_own(R['acq'], R['acq_detail']) if R else ''))
+        # v3.2: parent control decides nothing, so `ownership` is the only durable record of it.
+        # It must survive here or nobody can later tell why a row was worked with that caveat.
+        if parent_flag:
+            if ownership.startswith(('SERIAL_ACQUIRER', 'PE_BACKED')):
+                # A financial owner AND a strategic parent is a contradiction in the inputs.
+                # Keep both, visibly, rather than silently picking one.
+                ownership += ' | ' + parent_flag
+            else:
+                acq = (R['acq'] or '').strip().upper() if R else ''
+                pfx = acq if acq in ('ACQUIRED_RECENT', 'ACQUIRED_OLD', 'SUBSIDIARY') else 'SUBSIDIARY'
+                detail = (R['acq_detail'] or '').strip() if R else ''
+                ownership = _own(pfx, parent_flag + (' ' + detail if detail else ''))
 
         out.append(dict(src, **{
           'verified_company': g('name_fix').get(d, r['new_company']), 'verified_title': r['new_title'],
@@ -642,10 +682,12 @@ def main():
           'layer3a_web': l3a, 'layer3b_linkedin': l3b,
         }))
 
-    # A hard disqualifier must be asserted, not hedged. The scorer prefixes an unqualified
-    # "COMPETITOR —" / "DISTRESS —", so a hedge in the evidence is erased and a named company
-    # carries an allegation nobody actually made. Evidence too thin to state plainly — a
-    # hedge, a fetch failure, a bare digit — is too thin to disqualify on.
+    # A claim the CSV states flatly about a named company must be asserted, not hedged. The
+    # scorer prefixes an unqualified "COMPETITOR —" / "DISTRESS —" / "PARENT-CONTROLLED BUYING
+    # (operational evidence) —", so a hedge in the evidence is erased and the company carries a
+    # claim nobody actually made. Evidence too thin to state plainly — a hedge, a fetch failure,
+    # a bare digit — is too thin to assert. (`parent_control_inferred` is exempt: it is worded
+    # as the weaker claim, so a qualified reading of it is honest rather than misleading.)
     HEDGES = ('possible', 'possibly', 'partial', 'partially', 'maybe', 'likely', 'probable',
               'probably', 'potential', 'potentially', 'apparent', 'apparently', 'appears',
               'appear', 'seems', 'seem', 'suspected', 'unclear', 'unconfirmed', 'arguably',
@@ -654,16 +696,17 @@ def main():
         for dom, why in g(key).items():
             words = [w.lower().strip(':,;.-()"\'') for w in str(why).strip().split()]
             if not words or not any(words):
-                sys.exit(f'judgments.json: {key}[{dom}] has no evidence. A hard disqualifier '
-                         f'needs a reason a human can check.')
+                sys.exit(f'judgments.json: {key}[{dom}] has no evidence. A claim stated flatly '
+                         f'about a named company needs a reason a human can check.')
             # Scan the opening clause, not just the first token: "Staffing firm; possibly a
             # competitor" hedges just as much as "POSSIBLE COMPETITOR" and reads as flat
             # once the scorer prefixes an unqualified "COMPETITOR —".
             hit = next((w for w in words[:8] if w in HEDGES), None)
             if hit:
                 sys.exit(f'judgments.json: {key}[{dom}] is hedged — its opening clause says '
-                         f'{hit!r}. The scorer states this disqualification unqualified in '
-                         f'`verdict`, so the hedge would be erased. Establish it or drop it.')
+                         f'{hit!r}. The scorer states this unqualified in `verdict`, so the hedge '
+                         f'would be erased. Establish it, drop it, or — for a parent link seen '
+                         f'only in branding — record it under `parent_control_inferred`.')
 
     cols = set(out[0].keys())
     for cid, ov in g('row_overrides').items():

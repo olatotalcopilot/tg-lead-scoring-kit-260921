@@ -14,7 +14,7 @@ All paths are relative to the run folder and are declared in `run-config.json �
 {
   "campaign": "2026-09_GA-Founders",
   "score_date": "2026-09-21",
-  "rubric_version": "v3.1",
+  "rubric_version": "v3.2",
   "scoring_mode": "fully scored",
   "source_list": "the exact file or Apollo list this batch came from, with counts",
   "paths": {
@@ -30,8 +30,9 @@ All paths are relative to the run folder and are declared in `run-config.json �
 ```
 
 `scoring_mode` is `fully scored` or `scored without Linkedin API access` — one value for the whole
-batch. `rubric_version` must match the version the scorer implements, or it exits rather than
-silently relabelling scores.
+batch. `rubric_version` must match the version the scorer implements, **major.minor only** — a
+third digit is the kit patch level and is refused, because it would split one comparable
+population in two. Otherwise the scorer exits rather than silently relabelling scores.
 
 ---
 
@@ -172,8 +173,8 @@ a hard error, not a silent no-op.
 
 | Key | Keyed by | Effect |
 |---|---|---|
-| `parent_control_confirmed` | domain | Operational evidence the parent runs hiring/procurement/web presence. **Disqualifies at any deal age.** |
-| `parent_control_inferred` | domain | Branding evidence only. Routes to Review if otherwise Qualified+, else disqualifies. |
+| `parent_control_confirmed` | domain | Operational evidence the parent runs hiring/procurement/web presence. **Neither disqualifies nor routes** — recorded in `ownership` and stated at the front of `verdict`. |
+| `parent_control_inferred` | domain | Branding evidence only. Same treatment, worded as the weaker claim it is. |
 | `serial_acquirer` | domain | Decentralised permanent holder. Scored normally. |
 | `pe_recent` | domain | Financial sponsor, recap within ~18 months → Review. |
 | `pe_backed` | domain | Financial sponsor, older. Scored normally; recorded in `ownership`. |
@@ -191,8 +192,9 @@ a hard error, not a silent no-op.
 
 **`competitor`, `distress` and `parent_control_confirmed` must assert, not hedge.** The scorer
 refuses to run on an empty value, or on one whose opening clause contains a word like "possible",
-"potential", "appears" or "unclear" — the CSV states the disqualification unqualified, so a hedge
-would be erased and a named company would carry an allegation nobody made. That check is a
+"potential", "appears" or "unclear" — the CSV states each of these unqualified, so a hedge would
+be erased and a named company would carry a claim nobody made. `parent_control_inferred` is
+exempt: it is worded as the weaker claim, so a qualified reading of it is honest. That check is a
 tripwire for the obvious cases, not a proof: a hedge buried deep in a long entry still passes, so
 read the entries too.
 

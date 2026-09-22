@@ -1,8 +1,14 @@
 {
-  "competitor": {
-    "bridgeway-staffing.test": "Core business is contract staffing and direct placement; the site sells recruiting and staff augmentation as its primary service line."
-  },
-  "left": {
-    "C4": "Apollo employment history shows the role ended 2026-05; the contact is now at a different manufacturer. Backfill the correct persona here and score the new company separately."
-  }
+ "competitor": {
+  "bridgeway-staffing.test": "Core business is contract staffing and direct placement; the site sells recruiting and staff augmentation as its primary service line."
+ },
+ "left": {
+  "C4": "Apollo employment history shows the role ended 2026-05; the contact is now at a different manufacturer. Backfill the correct persona here and score the new company separately."
+ },
+ "parent_control_confirmed": {
+  "harborline-instruments.test": "The careers link on the company site redirects to the parent group's applicant system, and the open Regional Sales Manager requisition is posted under the parent legal entity."
+ },
+ "parent_control_inferred": {
+  "meadowgate-systems.test": "The About page reads \"a Meadowgate Group company\" and the LinkedIn name carries the group; nothing else ties the parent to hiring, procurement or the web presence."
+ }
 }

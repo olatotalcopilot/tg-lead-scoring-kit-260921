@@ -1,6 +1,6 @@
 # Scoring run — `<campaign>`
 
-**Date:** · **Rubric:** v3.1 · **Kit:** (the `kit x.y.z` line the scorer prints) ·
+**Date:** · **Rubric:** v3.2 · **Kit:** (the `kit x.y.z` line the scorer prints) ·
 **scoring_mode:** · **Source list:** (name, count, distinct companies; any already-scored
 carve-out; which source is authoritative if more than one exists)
 **Deliverable:** `<csv filename>` (rows, columns)
