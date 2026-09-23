@@ -7,6 +7,11 @@ people, no network calls, no credits.** Every `.test` domain is reserved and res
 bash selftest/run-selftest.sh
 ```
 
+It starts with `title-bands.py`, which pins 32 real job titles to the rubric's Layer 1 bands —
+including the ones a naive substring match gets wrong ("Vice President of Sales" is not a
+President, "Sales Coordinator" is not a COO, "Product Owner" is not an owner). Change a band
+deliberately and update that file; it is there so a band cannot move by accident.
+
 Expected last line: `SELFTEST PASSED`.
 
 Run it once at the start of a scoring run, before spending anything. It proves the scorer is
@@ -22,7 +27,7 @@ The fixture deliberately exercises six outcomes:
 | C4 Northwind Fabrication | Review — `contact_left_company`; contact scores blank and `Invalid`, **company scores stay real at 82/78** |
 | C5 Quietbrook Advisors | Review — `not_researched`; also the batch's `holdout` row |
 | C6 Legacy Holdings Group | Snapshot departure caught from employment history |
-| C7 Harborline Instruments | Parent-controlled on **operational** evidence — route Work, finding stated in `verdict` and `ownership` |
+| C7 Harborline Instruments | Parent-controlled on **operational** evidence — route Work, finding in `verdict` and `ownership`. Also earns Proven-Fit 89 on an unverified email, so its tier is **capped at Qualified** and it is listed as a reveal-credit candidate |
 | C8 Meadowgate Systems | Parent link on **branding** evidence only — route Work, weaker wording |
 
 The script then makes six broken copies and checks the scorer refuses each one: a hedged hard

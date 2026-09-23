@@ -8,15 +8,16 @@ only you can supply.
 
 ## Start here — five steps
 
-**1. Download the kit and unzip it.** You want a folder named `TG-Lead-Scoring-Kit` with
-`AGENT-START-HERE.md` inside it.
+**1. Download the kit and unzip it.** You want a folder with `AGENT-START-HERE.md` inside it,
+next to `method/`, `scorer/`, `templates/` and `selftest/`. Downloading from the repo names the
+folder something like `tg-lead-scoring-kit-…-main` — that is fine, leave the name alone.
 
 **2. Open a Claude session that has a connected folder.** Either start a new project and connect
 a folder to it, or open an existing session where a folder is already connected. The agent needs
 somewhere on your computer it can read from and write to.
 
-**3. Move the unzipped `TG-Lead-Scoring-Kit` folder into that connected folder.** Keep it whole —
-the files reference each other by name, so a loose file on its own will not work.
+**3. Move the unzipped folder into that connected folder.** Keep it whole — the files reference
+each other by name, so a loose file on its own will not work.
 
 **4. Check your tools are connected.** Apollo and web search are required. The RapidAPI *Fresh
 LinkedIn Profile Data* feed is strongly recommended; without it the whole batch is scored web-only
@@ -27,8 +28,9 @@ and cannot be compared against batches that had it.
 ```
 You are running a lead scoring batch for TG Sales Agency using our existing, validated method.
 
-The method is in the TG-Lead-Scoring-Kit folder in this session's connected folder. Open
-TG-Lead-Scoring-Kit/AGENT-START-HERE.md and follow it exactly, starting at Step 0.
+The method is in the lead scoring kit folder in this session's connected folder — find the
+folder that contains AGENT-START-HERE.md next to method/, scorer/ and selftest/, whatever it is
+named. Open its AGENT-START-HERE.md and follow it exactly, starting at Step 0.
 
 Do not design a scoring method, write a rubric, or write a scorer — all three already exist in
 that folder. Read them first, run the self-test, then tell me what you need from me and wait.
@@ -48,11 +50,11 @@ answer lives. You can also just ask the agent — it is told where every answer 
 
 | | |
 |---|---|
-| **Version** | **3.2.1** |
-| **Released** | 2026-09-22 |
-| **Title** | Quick-start instructions |
+| **Version** | **3.3.0** |
+| **Released** | 2026-09-23 |
+| **Title** | Title banding, industry map, Hot needs an email |
 | **Description** | The complete scoring method — rubric, playbook, schema, research brief, scorer and self-test — as one self-contained folder a teammate's agent can run from cold. |
-| **Stamped on every row** | `rubric_version = v3.2` |
+| **Stamped on every row** | `rubric_version = v3.3` — **not** comparable with v3.1 or v3.2 scores |
 
 **One version line covers the kit and the rubric.** They used to be numbered separately; they
 are not separate things, so they are now the same number.
@@ -134,7 +136,7 @@ run on — put bulk research on a cheap tier and reserve the expensive one for s
 
 A **run folder**, separate from this kit:
 
-- **`TG-scored-full-<campaign>-v3.2.csv`** — the deliverable. One row per contact, ~60 columns:
+- **`TG-scored-full-<campaign>-v3.3.csv`** — the deliverable. One row per contact, ~60 columns:
   both scores, both tiers, company-level scores, the route, the reason, the evidence links, and
   every input that fed the score.
 - **`TG-run-<campaign>.md`** — the run doc. Counts by route, every disqualification with its
@@ -181,16 +183,16 @@ blocks a run; all of it is worth knowing before you read a number too confidentl
    than dropped, which is the right call on the evidence — one such company closed at several
    times TG's median deal after the old rule would have discarded it — but nobody yet knows what
    share of them reply "that goes through our parent now." Worth counting after a batch or two.
-2. **A Proven-Fit Hot row without a verified email stops the run.** The rubric requires a
-   verified email for Proven-Fit Hot, but capping such a row at Qualified would be a tiering
-   change the rubric does not state. So the scorer flags it and a human decides — every run,
-   every time. It needs a standing ruling.
+2. **`crm_status` is never populated.** Every row ships `none`, because nothing in the pipeline
+   feeds CRM history in. The column is in the schema and the rubric treats it as advisory, but
+   until a CRM source is wired the pursue/suppress signal it is meant to carry is simply absent.
 3. **The holdout is not a random sample.** It is every unworked low scorer, which means the
    low-score control is weak and forward validation of the research layer has not really begun.
    The fix is to reserve the holdout by random sample before routing.
-4. **An unassessed industry scores the same as one that passed the test.** Industries the scorer
-   does not recognise get a default 8 out of 10, so "this passed the sales-motion test" and
-   "nobody ran the test" are indistinguishable in the data.
+4. **The industry map is incomplete.** Apollo's taxonomy is larger than the ICP lists, so an
+   unrecognised industry still takes the off-list 8. The scorer now names every unmapped string
+   it met with a row count, so the gap is visible per run rather than silent — but mapping the
+   full taxonomy is still outstanding.
 5. **The `domain` column shows the source list's domain, not the one that was scored.** Where
    the live lookup resolved a different domain, that is what the ratio and the research were
    measured on, and a reader of the spreadsheet cannot tell.
@@ -220,7 +222,7 @@ blocks a run; all of it is worth knowing before you read a number too confidentl
 | # | Item | Why it matters |
 |---|---|---|
 | 1 | **Re-examine parent-control drops in batches scored before 3.2.0.** They were disqualified under a rule that no longer exists; each is a Qualified-or-better lead sitting in a CSV | A cheap query against CSVs already held. Sizes what the old rule cost, and puts recoverable leads back in play |
-| 2 | Settle the Proven-Fit Hot / verified-email question into a standing rule | Removes a stop that recurs on every run |
+| 2 | **Wire a CRM source into `crm_status`**, so the advisory column carries something | Today the pursue/suppress signal the rubric describes never reaches a row |
 | 3 | Reserve the holdout by random sample before routing | Makes forward validation of the research layer possible at all |
 | 4 | Encode the subjective judgements, the competitor-rule boundary and the unassessed industries as rules | One workstream, not three tickets; ends the per-run re-decision |
 | 5 | Emit the resolved live domain alongside the source-list domain | Lets a spreadsheet reader see which company was actually measured |

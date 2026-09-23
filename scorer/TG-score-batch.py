@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TG Sales Agency — batch scorer. Rubric v3.2.
+"""TG Sales Agency — batch scorer. Rubric v3.3.
 
 Reusable across runs. The scoring MATH lives here and must not be re-derived by hand;
 the per-run HUMAN JUDGEMENT lives in judgments.json. Change the judgements, not this file.
@@ -55,8 +55,8 @@ import csv, json, collections, re, sys, argparse, os
 # Only major.minor reaches the data. `rubric_version` is a comparability key stamped on
 # every row, so equality on it has to mean "these rows are comparable"; letting a patch
 # bump through would split one comparable population in two for no reason.
-KIT_VERSION      = '3.2.1'
-RUBRIC_SUPPORTED = 'v3.2'
+KIT_VERSION      = '3.3.0'
+RUBRIC_SUPPORTED = 'v3.3'
 
 JUDGEMENT_KEYS = {
     'parent_control_confirmed': 'domain -> reason. Operational evidence the parent runs hiring/'
@@ -92,12 +92,32 @@ JUDGEMENT_KEYS = {
 
 OFFSHORE_COUNTRIES = ("India, Philippines, Pakistan, Bangladesh, Sri Lanka, "
                       "Vietnam, Indonesia")
-# Apollo industry string -> Ideal-Fit industry points. Standing map (rubric-derived,
-# not per-run): Primary 10 / Secondary 7 / Additional 5 / off-list sales-motion up to 8.
-# Anything unmapped defaults to 8 and should be confirmed or overridden per run.
-IND_BY_APOLLO = {'information technology & services':10, 'computer & network security':10,
-                 'telecommunications':7, 'information services':10, 'research':8,
-                 'e-learning':8, 'insurance':10, 'online media':7}
+# Apollo industry string -> Ideal-Fit industry points, from the rubric's own lists:
+# Primary 10 / Secondary 7 / Additional 5 / assessed-but-off-list 8 / B2C 0.
+# An industry NOT in this map takes IND_DEFAULT, and the scorer prints every unmapped
+# string it met with a row count — so "assessed and off-list" and "nobody looked" stop
+# being the same value. Override a specific domain with judgments.json -> ind_override.
+IND_DEFAULT = 8
+IND_BY_APOLLO = {
+    # Primary (10) — consulting; outsourced business/strategy/IT/IoT/SaaS services;
+    # commercial construction and remodeling.
+    'management consulting': 10, 'information technology & services': 10,
+    'computer & network security': 10, 'information services': 10,
+    'outsourcing/offshoring': 10, 'construction': 10, 'civil engineering': 10,
+    # Secondary (7) — B2B manufacturers, equipment, industrial services, wholesale.
+    'machinery': 7, 'industrial automation': 7, 'mechanical or industrial engineering': 7,
+    'electrical/electronic manufacturing': 7, 'building materials': 7, 'wholesale': 7,
+    'logistics & supply chain': 7, 'facilities services': 7, 'telecommunications': 7,
+    # Additional (5) — automotive, wealth management, VC/PE, software development.
+    'automotive': 5, 'financial services': 5, 'investment management': 5,
+    'venture capital & private equity': 5,
+    # Assessed, off-list, passes the sales-motion test (8). Listed rather than left to
+    # the default so the record shows someone judged them.
+    'insurance': 8, 'research': 8, 'e-learning': 8, 'online media': 8,
+    'staffing & recruiting': 8,   # scored normally; the competitor rule drops these
+    'computer software': 8,       # spans Primary SaaS and Additional software-dev —
+                                  # override per domain when it matters
+}
 
 # Layer 1 geography is scored on the CONTACT's country, never the company HQ. The bands
 # are US / Europe-ME / other. "Europe" is read geographically — the rationale is time-zone
@@ -142,22 +162,66 @@ def size_p(e):
     e = int(float(e))
     return 8 if e<=50 else 6 if e<=100 else 4 if e<=200 else 1
 
-def title_p(t, sen):
-    t = (t or '').lower()
-    if any(k in t for k in ['chief executive','ceo','founder','owner','co-founder','chairman']): return 12
-    if any(k in t for k in ['president','coo','chief operating']): return 9
-    if any(k in t for k in ['chief revenue','head of revenue','head of gtm','chief growth']): return 6
-    if any(k in t for k in ['vp','vice president','cro','chief sales','chief commercial','svp','head of sales']): return 4
-    return 3
+# ─────────────────────────────────────────────────────────────── title banding
+# Titles are matched on WHOLE WORDS over a normalised string, and the bands are tried
+# in order so that a specific title is caught before the title it contains. Substring
+# matching is what made "Vice President of Sales" score as a President, "Sales
+# Coordinator" as a COO ("coo" inside "coordinator") and "Product Owner" as a Founder.
+#
+# One function returns both bands, because Proven title and Ideal persona are two
+# readings of the same judgement and must never disagree about what a title is.
 
-def persona_i(t, sen):
-    t = (t or '').lower()
-    if any(k in t for k in ['chief executive','ceo','founder','owner','co-founder','chairman',
-                            'chief revenue','cro','vp of sales','vice president of sales','vp sales']): return 10
-    if any(k in t for k in ['head of revenue','head of gtm','chief growth']): return 9
-    if any(k in t for k in ['president','coo','chief operating']): return 8
-    if any(k in t for k in ['vp','vice president','svp','director','sales','chief','head']): return 4
-    return 3
+def _title_words(t):
+    """Lowercase, punctuation to spaces, padded — so ' vp ' cannot match inside a word."""
+    return ' %s ' % re.sub(r'[^a-z0-9]+', ' ', (t or '').lower()).strip()
+
+# A Product/Process/Service Owner owns a deliverable, not the business. Neutralise the
+# word before banding so these cannot reach the founder band.
+_ROLE_OWNER = re.compile(r' (product|process|service|data|platform|content|scrum|feature|'
+                         r'program|project|risk|quality|domain) owner ')
+
+def title_band(t, sen=None):
+    """(band name, Proven Layer-1 title points, Ideal Layer-1 persona points).
+
+    Bands follow method/1-scoring-rubric.md Layer 1P *Title* and Layer 1I *Title/persona*.
+    `sen` (Apollo seniority) is accepted for signature stability and deliberately unused:
+    the rubric scores the title, and Apollo's seniority disagrees with it often enough
+    that blending the two would hide which one drove a score.
+    """
+    w = _ROLE_OWNER.sub(' role owner ', _title_words(t))
+    def has(*pats): return any(re.search(p, w) for p in pats)
+
+    is_vp    = has(r' (vice president|vp|svp|evp) ')
+    is_md    = has(r' managing director ')
+    is_sales = has(r' (sales|revenue|commercial|go to market|gtm|business development|bd) ')
+
+    # Founder / owner / CEO — the proven buyer.
+    if has(r' (chief executive( officer)?|ceo) ', r' (co )?founder ',
+           r' founding (partner|member) ', r' (?<!role )owner ', r' proprietor ',
+           r' managing (partner|member) ', r' general partner ',
+           r' chair(man|woman|person)? '):
+        return 'founder/owner', 12, 10
+    # CRO and the sales-leader titles the rubric maps onto VP Sales.
+    if has(r' chief (revenue|sales|commercial)( officer)? ', r' cro '):
+        return 'cro', 4, 10
+    if (is_vp or is_md) and is_sales:
+        return 'vp_sales', 4, 10
+    if has(r' head of sales '):
+        return 'head_of_sales', 4, 10
+    # Head of Revenue / GTM sits ABOVE CRO on Proven-Fit: at TG's size it is usually a
+    # generalist close to the founder, where a CRO is a large-company sales executive.
+    if has(r' head of (revenue|gtm|go to market|growth) ', r' chief growth( officer)? '):
+        return 'head_of_revenue', 6, 9
+    # President, but never "Vice President" — that is caught above or falls through.
+    if has(r' (chief operating( officer)?|coo) ') or (has(r' president ') and not is_vp):
+        return 'president/coo', 9, 8
+    # Sales leadership below VP: Director of Sales, Sales Manager and similar.
+    if is_sales and has(r' (director|manager|lead|head|principal) '):
+        return 'sales_other', 3, 4
+    return 'other', 3, 3
+
+def title_p(t, sen=None):   return title_band(t, sen)[1]
+def persona_i(t, sen=None): return title_band(t, sen)[2]
 
 def size_x_title(e, sen):
     e = int(float(e)) if e else 0
@@ -322,16 +386,14 @@ def validate(out):
         if (x.get('eval_group') or '') not in ('work', 'holdout'):
             flag('eval_group=%r is not a valid enum value (work/holdout)' % x.get('eval_group'))
 
-        # The rubric makes a verified email a requirement of the Proven-Fit Hot tier (its
-        # "Weighting note"). Capping Hot at Qualified would be a tiering change the rubric
-        # does not state, so this STOPS the batch and names the rows instead of silently
-        # retiering them. Resolve the rows, or ship the violation visibly with the reason
-        # written into the run doc.
+        # Proven-Fit Hot requires a verified email, and the scorer caps the tier when there
+        # is none. This asserts the cap actually held — it should never fire on scorer output,
+        # only on a row somebody re-tiered by hand.
         if x.get('proven_fit_tier') == 'Hot' and (x.get('verified_email_status') or '') != 'verified':
-            flag('proven_fit_tier=Hot but verified_email_status=%r — the rubric requires a '
-                 'verified email for Proven-Fit Hot' % x.get('verified_email_status'))
+            flag('proven_fit_tier=Hot but verified_email_status=%r — Hot requires a verified '
+                 'email and the cap should have applied' % x.get('verified_email_status'))
 
-        # v3.2: parent control no longer routes, so `ownership` is the ONLY durable record
+        # Parent control does not route, so `ownership` is the ONLY durable record
         # of it. If the verdict states the finding, the evidence has to be there too — a row
         # worked with that caveat must be explicable later without re-doing the research.
         if 'PARENT-CONTROLLED BUYING' in (x.get('verdict') or '') or \
@@ -431,6 +493,8 @@ def main():
             li_mkt=int(f[14]), li_growth=int(f[15]), li_hire=int(f[16]), note=f[17], urls=f[18])
 
     out = []
+    unmapped_industries = collections.Counter()
+    hot_capped = []
     for r in rows:
         src  = roster.get(r['contact_id'], {})
         cid  = r['contact_id']
@@ -502,7 +566,7 @@ def main():
             # primary and drives review_reason; this note trails it.
             review.append(note); caveats.append(note)
 
-        # v3.2: parent control neither disqualifies nor routes. A company whose careers page
+        # Parent control neither disqualifies nor routes. A company whose careers page
         # redirects to its parent still has its own brand, sales team, P&L and budget, and the
         # cost asymmetry the rubric already states settles it: a false drop loses a Qualified
         # prospect permanently and invisibly, while a false include costs one sequence and a
@@ -545,7 +609,9 @@ def main():
             ct, ind = 0, 0
         else:
             ct  = g('ctype_override').get(d, 12 if (R and R['ticket']==5) else 7)
-            ind = g('ind_override').get(d, IND_BY_APOLLO.get(r.get('industry'), 8))
+            ind = g('ind_override').get(d, IND_BY_APOLLO.get(r.get('industry'), IND_DEFAULT))
+            if r.get('industry') and r['industry'] not in IND_BY_APOLLO and d not in g('ind_override'):
+                unmapped_industries[r['industry']] += 1
         L1P = dict(company_type=ct, size=size_p(r['emp']), title=title_p(r['new_title'], r['seniority']),
                    deal=deal_p(r['rev']), geo=geo_p(r['country']))
         L1I = dict(industry=ind, size_x_title=size_x_title(r['emp'], r['seniority']),
@@ -637,11 +703,20 @@ def main():
         def _own(prefix, detail):
             detail = (detail or '').strip()
             return f'{prefix}: {detail}' if detail else prefix
+        # The rubric makes a verified email a requirement of the Proven-Fit Hot tier, so a
+        # row that earns Hot without one ships as Qualified. The numbers are untouched and
+        # the cap is re-derivable from proven_fit_score + verified_email_status; these rows
+        # are the reveal-credit candidates and are listed at the end of the run.
+        ptier = tier(Pv)
+        if not invalid and ptier == 'Hot' and r['email_status'] != 'verified':
+            ptier = 'Qualified'
+            hot_capped.append((Pv, Iv, g('name_fix').get(d, r['new_company']) or d))
+
         ownership = (_own('SERIAL_ACQUIRER', g('serial_acquirer')[d]) if d in g('serial_acquirer')
                      else _own('PE_BACKED', g('pe_backed')[d]) if d in g('pe_backed')
                      else _own('PE_BACKED', g('pe_recent')[d]) if d in g('pe_recent')
                      else (_own(R['acq'], R['acq_detail']) if R else ''))
-        # v3.2: parent control decides nothing, so `ownership` is the only durable record of it.
+        # Parent control decides nothing, so `ownership` is the only durable record of it.
         # It must survive here or nobody can later tell why a row was worked with that caveat.
         if parent_flag:
             if ownership.startswith(('SERIAL_ACQUIRER', 'PE_BACKED')):
@@ -660,7 +735,7 @@ def main():
           'employees': r['emp'], 'revenue': r['rev'], 'hq_country': r['hq_country'],
           'proven_fit_score': '' if invalid else Pv, 'ideal_fit_score': '' if invalid else Iv,
           'proven_fit_company': PC, 'ideal_fit_company': IC,
-          'proven_fit_tier': 'Invalid' if invalid else tier(Pv),
+          'proven_fit_tier': 'Invalid' if invalid else ptier,
           'ideal_fit_tier': 'Invalid' if invalid else tier(Iv),
           'proven_fit_company_tier': tier(PC), 'ideal_fit_company_tier': tier(IC),
           'contact_company_mismatch': mismatch, 'crm_status': 'none', 'campaign': CAMPAIGN,
@@ -731,6 +806,18 @@ def main():
     print('review_reason:', dict(c(x['review_reason'] for x in out if x['route']=='Review')))
     print('proven tier:  ', dict(c(x['proven_fit_tier'] for x in out)))
     print('ideal tier:   ', dict(c(x['ideal_fit_tier'] for x in out)))
+    if unmapped_industries:
+        print('\nNOTE: %d industry string(s) are not in the scorer map and scored the %d-point '
+              'off-list default. Confirm or override them, and name them in the run doc:'
+              % (len(unmapped_industries), IND_DEFAULT))
+        for ind, n in unmapped_industries.most_common():
+            print('   %-44s %d row(s)' % (ind, n))
+    if hot_capped:
+        print('\nNOTE: %d row(s) earned Proven-Fit Hot but have no verified email, so they ship '
+              'as Qualified. These are the reveal-credit candidates:' % len(hot_capped))
+        for pv, iv, who in sorted(hot_capped, reverse=True):
+            print('   %3d proven / %3d ideal   %s' % (pv, iv, who))
+
     hold = sum(1 for x in out if x['eval_group']=='holdout')
     if not hold:
         print('\n!! WARNING: eval_group has NO holdout rows. Every low scorer was routed to '

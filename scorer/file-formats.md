@@ -14,7 +14,7 @@ All paths are relative to the run folder and are declared in `run-config.json â†
 {
   "campaign": "2026-09_GA-Founders",
   "score_date": "2026-09-21",
-  "rubric_version": "v3.2",
+  "rubric_version": "v3.3",
   "scoring_mode": "fully scored",
   "source_list": "the exact file or Apollo list this batch came from, with counts",
   "paths": {

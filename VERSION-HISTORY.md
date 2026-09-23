@@ -29,6 +29,51 @@ runs — the kit deliberately carries no run history, and each run writes its ow
 
 ## Releases
 
+### 3.3.0 — 2026-09-23 — *Title banding, industry map, Hot needs an email*
+
+**Scores change. v3.3 rows are NOT comparable with v3.1 or v3.2 rows** — Layer 1 moved on both
+scales. Layers 2 and 3 are untouched, so the research and reachability sub-scores carry over, but
+do not rank a v3.3 row against an earlier one.
+
+**1. Titles are banded on whole words.** The old matcher looked for substrings, which put nine of
+twelve common titles in the wrong band: `'president'` inside *Vice President of Sales* scored a VP
+as a President (9 instead of 4), `'coo'` inside *Coordinator* scored a Sales Coordinator as a COO,
+`'owner'` inside *Product Owner* scored a delivery role as a Founder (12/10), and *Managing
+Partner*, *Head of Sales* and *VP, Sales* all fell through to the bottom band. Title is 12 of 40
+Proven-Fit points and persona is 10 of 40 Ideal-Fit, and the backtest names persona as the most
+load-bearing signal in the model — so this was the largest single source of error in the scorer.
+
+One function now returns both bands, so the Proven title and the Ideal persona can never disagree
+about what a title is, and the rubric carries the band table in full. A new
+`selftest/title-bands.py` pins 32 real titles, including every trap above.
+
+**2. The industry map was corrected against the rubric's lists.** Insurance scored 10 despite
+being on no list; *management consulting* and *construction* fell to the off-list default despite
+being Primary. The map now covers the Primary, Secondary and Additional lists, plus the industries
+assessed as off-list — and the scorer **prints every unmapped industry string it met, with a row
+count**, so "assessed and off-list" and "nobody looked" are no longer the same silent 8.
+
+**3. Proven-Fit Hot now requires a verified email — the tier caps, the run does not stop.** The
+rubric always required it; the scorer used to raise a violation and halt so a human could rule.
+Standing ruling: a row earning 80+ without a verified email **ships as Qualified**. The score is
+untouched and the cap is re-derivable from `proven_fit_score` + `verified_email_status`, and the
+scorer lists every capped row at the end of a run as the reveal-credit candidates. The invariant
+stays, now asserting the cap held rather than stopping the batch.
+
+**4. The departed-contact gate is written into the rubric.** A departed or unverifiable contact
+routes to Review only where the **company** clears the Qualified gate; below it the row is
+Disqualified, because a reviewer sent to a 22/22 company has no persona to retarget to. The
+behaviour is unchanged — it existed only as a comment in the scorer, which made it look like a
+divergence from the method.
+
+**5. The folder no longer has to be called `TG-Lead-Scoring-Kit`.** Downloading from the repo
+produces `tg-lead-scoring-kit-…-main`; the README, the kick-off prompt and the agent instructions
+now identify the kit by its contents instead of its name.
+
+*Not included:* batches scored before 3.3 were not re-scored. Their title, persona and industry
+sub-scores are unreliable and no correction has been applied — recorded here so nobody reads an
+older CSV as current.
+
 ### 3.2.1 — 2026-09-22 — *Quick-start instructions*
 
 Documents only. **No rule, no arithmetic and no scored value can differ because of this release.**
@@ -131,10 +176,15 @@ seen it.
 Reconstructed from the project's own records. Dates before 3.1.0 are as recorded at the time;
 where a record gave only a month, the month is what appears here.
 
+### v3.3 — 2026-09-23 — *Layer 1 corrected*
+
+Current. Shipped in kit 3.3.0; see that release above. Title, persona and industry all move, so
+**v3.3 scores are not comparable with any earlier version**.
+
 ### v3.2 — 2026-09-22 — *Parent control is recorded, not a drop*
 
-Current. Shipped in kit 3.2.0; see that release above for the change and its rationale. Layers
-1–3 are unchanged from v3.1, so scores are comparable across the two and routes are not.
+Shipped in kit 3.2.0. Layers 1–3 are unchanged from v3.1, so v3.1 and v3.2 scores are comparable
+and their routes are not.
 
 ### v3.1 — Jul 2026 — *Ownership rules rewritten; disqualified rows keep their scores*
 
@@ -198,6 +248,7 @@ separates little. That finding is why the weights are what they are and has not 
 
 | Build | Shipped in | What changed |
 |---|---|---|
+| **3.3.0 build** | 3.3.0 | Titles banded on whole words via a single `title_band()`; industry map corrected and unmapped strings reported; Proven-Fit Hot capped at Qualified without a verified email, with the capped rows listed for a reveal decision. |
 | **3.2.0 build** | 3.2.0 | Parent control neither disqualifies nor routes; the finding is written to `verdict` and `ownership`, and a new invariant checks it survives. The hedge guard now covers `parent_control_confirmed` as a flatly-stated claim rather than as a disqualifier. |
 | **Kit build** | 3.1.0 | Refuses to run on an `email_status` value it does not map, naming the required normalisation, instead of silently scoring it 0 — which cost 4 or 8 Layer 2 points on every row carrying one. Run-specific commentary rewritten as general rules; no arithmetic touched. |
 | **Sep 2026, later** | pre-kit | Refuses to run on an empty `competitor`, `distress` or `parent_control_confirmed` judgement, or on one whose opening clause hedges, because the CSV states a disqualification unqualified and would erase the hedge. Establishes up front whether `matched.json` can answer the departure test and stops with a named error rather than answering "this person left" for everyone. Emits a bare `INDEPENDENT` rather than a trailing-colon `INDEPENDENT:`. Reads `li-urls.json` into `li_company`. |

@@ -1,6 +1,6 @@
 # TG Sales Agency — Dual Lead Scoring Rubric
 
-**`rubric_version` = `v3.2`**
+**`rubric_version` = `v3.3`**
 **Scores:** Proven-Fit Score (`proven_fit_score`) · Ideal-Fit Score (`ideal_fit_score`)
 
 This document owns **what to score, the weights, the disqualifiers, the tiers, the routes and
@@ -83,6 +83,31 @@ on time-stable fit signals, separates winners from losers ~3–4×.
 - **Worked example:** a Chicago-based VP of Sales at a company with a Toronto HQ → **US, full
   points.** Record the HQ country separately in `hq_country` so the discrepancy stays visible.
 
+**How to read "Title"** — the bands, and the titles that fool a naive reading
+
+A title is judged on **whole words**, and the more specific band wins. These are the same
+bands as the table above, with the messy titles resolved:
+
+| Band | Proven title | Ideal persona | Titles |
+|---|---|---|---|
+| Founder / owner | **12** | **10** | CEO, Chief Executive, Founder, Co-Founder, Owner, Proprietor, Managing Partner, Managing Member, General Partner, Chairman |
+| CRO | **4** | **10** | Chief Revenue / Sales / Commercial Officer |
+| VP Sales | **4** | **10** | VP / SVP / EVP of Sales, Revenue, Commercial or Business Development · Managing Director with a revenue remit · Head of Sales |
+| Head of Revenue / GTM | **6** | **9** | Head of Revenue, Head of GTM, Head of Growth, Chief Growth Officer |
+| President / COO | **9** | **8** | President (never *Vice* President), COO, Chief Operating Officer |
+| Sales leadership below VP | **3** | **4** | Director of Sales, Sales Manager, Regional Sales Manager |
+| Other | **3** | **3** | Everything else, including a VP of a non-revenue function |
+
+**Head of Revenue outranks a CRO on Proven-Fit, deliberately.** At TG's proven size a Head of
+Revenue is usually a generalist close to the founder, while a CRO is a large-company sales
+executive — and the wins say founders buy, not sales executives.
+
+**Three titles read wrongly unless whole words are matched**, and each has been seen:
+"Vice President of Sales" is not a President · "Sales Coordinator" is not a COO · "Product Owner"
+(or Process, Service, Scrum, Program Owner) is not an owner. A **bare "Managing Director"** is
+genuinely ambiguous — a chief executive in some markets, a revenue lead in others — so it scores
+as *other* and should be overridden per run when the company is known.
+
 **Unknown size.** A blank employee count scores **0**, not the small-company 8. Absence of
 evidence is not evidence of being small, and a row with no firmographics must not outscore a
 known 120-person company. A researched company with no employee count also routes to Review as
@@ -90,10 +115,13 @@ known 120-person company. A researched company with no employee count also route
 
 ### Weighting note
 
-Email reachability matters more for Proven-Fit (email closed 28 of 50 wins): treat a verified
-email as a soft requirement, and the Proven-Fit **Hot** tier as requiring one. The scorer raises
-a violation on any Proven-Fit Hot row without a verified email so a human decides it — it does
-not silently retier the row. See *Gates* in the playbook.
+Email reachability matters more for Proven-Fit (email closed 28 of 50 wins), so **the Proven-Fit
+Hot tier requires a verified email.** A row that earns 80+ without one **ships as Qualified**.
+
+The numbers are untouched — `proven_fit_score` keeps its real value and the cap is re-derivable
+from it and `verified_email_status`, so nothing is hidden. The scorer lists every capped row at
+the end of a run: those are the rows where spending a reveal credit would move a lead into Hot,
+which is the one point in the method where credit spend is expected.
 
 ---
 
@@ -103,11 +131,18 @@ not silently retier the row. See *Gates* in the playbook.
 
 | Criterion | Pts | Scoring |
 |---|---|---|
-| Industry | 10 | Primary (consulting; outsourced services biz/strategy/IT/IoT/SaaS; commercial construction & remodeling) = 10 · Secondary (B2B mfrs, equipment, industrial services, wholesale dist.) = 7 · Additional (automotive, wealth mgmt, VC, PE, software dev) = 5 · off-list passing the sales-motion test = up to 8 · B2C = 0 |
+| Industry | 10 | *(See the note below on how an Apollo industry string reaches a band.)* Primary (consulting; outsourced services biz/strategy/IT/IoT/SaaS; commercial construction & remodeling) = 10 · Secondary (B2B mfrs, equipment, industrial services, wholesale dist.) = 7 · Additional (automotive, wealth mgmt, VC, PE, software dev) = 5 · off-list passing the sales-motion test = up to 8 · B2C = 0 |
 | Size × title pairing | 8 | CEO/Founder at 20–200 = 8 · CRO/VP Sales at 100–500 = 8 · CEO at 201–500 = 6 · VP/CRO at 20–99 = 4 (retarget CEO) · other = 3 · <20 or >1000 = 0–2 |
 | Revenue | 7 | $10–100M = 7 · $3–10M w/ Seed–Series B = 5 · unknown but plausible = 3 · outside = 0 |
 | Title / persona | 10 | CEO/Founder, CRO, VP Sales = 10 · Head of Rev/GTM = 9 · COO/President = 8 · other sales leadership = 4 |
 | Geography | 5 | US / Europe / Middle East = 5 · other = 0 — **scored on the contact's location, not company HQ**. Campaign slices never affect the score. |
+
+**How an Apollo industry string reaches a band.** The scorer holds a standing map from Apollo's
+industry strings onto these four bands. It is **incomplete by nature** — Apollo's taxonomy is
+larger than the ICP lists — so an unmapped string takes the off-list **8**, and the scorer prints
+every unmapped string it met with a row count. Name those in the run doc, and override a specific
+company with `judgments.json → ind_override`. The point of the report is that "assessed, off-list,
+passes the sales-motion test" and "nobody looked" are both 8 and must not be confused.
 
 **How to read "Size × title pairing"**
 
@@ -210,12 +245,17 @@ a batch:
 rubric over time; `scoring_mode` guards against comparing a LinkedIn-assessed score with a
 web-only one. Always filter on both before ranking or comparing.
 
-*Documented exception — v3.1 and v3.2 scores are directly comparable.* Layers 1–3 are
-arithmetically identical across the two; v3.2 changed only what happens to a lead once it is
-scored. So a `v3.1` row and a `v3.2` row of the same `scoring_mode` may be ranked together. Their
-**`route` values may not be compared**: a company with a strategic parent was disqualified under
-v3.1 and is worked under v3.2, so any count of drops, or any filter on `route`, has to be taken
-one version at a time.
+*v3.1 and v3.2 scores are directly comparable* — Layers 1–3 are arithmetically identical across
+the two, and v3.2 changed only what happens to a lead once scored. Their **`route` values may not
+be compared**: a company with a strategic parent was disqualified under v3.1 and is worked under
+v3.2, so any count of drops, or any filter on `route`, has to be taken one version at a time.
+
+***v3.3 scores are NOT comparable with v3.1 or v3.2.*** Layer 1 changed on both scores: titles are
+banded on whole words, so several common titles move by up to 9 Proven points and 7 Ideal points,
+and the industry map was corrected against the lists above. **Do not rank a v3.3 row against an
+earlier one.** Earlier rows are not wrong about the company — the research and reachability layers
+are untouched — but their title, persona and industry sub-scores are unreliable, and no rescore of
+them has been done.
 
 **Unresearched rows are not low-scoring rows.** If Layer 3 never ran for a lead — no domain on
 record, research budget exhausted, an upstream disqualification short-circuited the pipeline —
@@ -578,6 +618,13 @@ a company they may have left, which is the exact failure the verification pass p
   known role. The company is still a company, and the company scores are what the job-change
   follow-through acts on. Never use `not_researched` here — that sends a reviewer to research a
   company when the real question is where the person works.
+
+**An unusable contact is a question about the company, and it is gated on the company.** A
+departed or unverifiable contact routes to Review so a human can find the right persona — but only
+where the **company** clears the Qualified gate on either company score. Below that gate the row
+is Disqualified, because there is no persona worth retargeting to: a reviewer sent to a company
+scoring 22/22 has nothing to find, and their attention is the scarce resource. The same gate
+applies whether the departure was detected from employment history or recorded by hand.
 
 **Confirming the contact does not confirm the domain — corroborate it separately.** Employment
 history validates *the person*; the domain on the Contact record is a separate field and can

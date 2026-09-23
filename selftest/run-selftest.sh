@@ -22,6 +22,10 @@ check () { # name, expected-substring, expected-exit, workdir
   fi
 }
 
+echo "self-test: title bands"
+if out="$(python3 "$HERE/title-bands.py" 2>&1)"; then echo "  ok    $out"
+else echo "  FAIL  title bands"; printf '%s\n' "$out" | sed 's/^/        /'; fails=$((fails+1)); fi
+
 echo "self-test: scoring an eight-row fabricated fixture"
 
 cp -R "$HERE" "$TMP/clean"
@@ -51,11 +55,11 @@ sed -i 's/,verified,c_suite,United States/,User Managed,c_suite,United States/' 
 check "refuses an unmapped email_status" "CANNOT RUN: verified.csv" 1 "$TMP/email"
 
 cp -R "$HERE" "$TMP/patchver"
-sed -i 's/"rubric_version": "v3.2"/"rubric_version": "v3.2.1"/' "$TMP/patchver/run-config.json"
+sed -i 's/"rubric_version": "v3.3"/"rubric_version": "v3.3.1"/' "$TMP/patchver/run-config.json"
 check "refuses a patch digit in rubric_version" "major.minor only" 1 "$TMP/patchver"
 
 cp -R "$HERE" "$TMP/wrongver"
-sed -i 's/"rubric_version": "v3.2"/"rubric_version": "v3.1"/' "$TMP/wrongver/run-config.json"
+sed -i 's/"rubric_version": "v3.3"/"rubric_version": "v3.2"/' "$TMP/wrongver/run-config.json"
 check "refuses a rubric version it does not implement" "This scorer implements" 1 "$TMP/wrongver"
 
 cp -R "$HERE" "$TMP/flat"

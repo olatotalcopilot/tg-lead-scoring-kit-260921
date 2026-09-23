@@ -23,7 +23,7 @@ right.
 | `ideal_fit_score` | Number | 0–100 | Contact-level. Source of truth. Never zeroed by a disqualifier. |
 | `proven_fit_company` | Number | 0–100 | Company-level, shared by all contacts at that company. |
 | `ideal_fit_company` | Number | 0–100 | Company-level. |
-| `proven_fit_tier` | Enum | Hot / Qualified / Nurture / Skip / Invalid | Derived from `proven_fit_score`. |
+| `proven_fit_tier` | Enum | Hot / Qualified / Nurture / Skip / Invalid | Derived from `proven_fit_score`, **capped at Qualified when `verified_email_status` is not `verified`** — the rubric makes a verified email a requirement of Proven-Fit Hot. The score itself is never capped, so the two columns together show where a reveal credit would buy a Hot lead. |
 | `ideal_fit_tier` | Enum | Hot / Qualified / Nurture / Skip / Invalid | Derived from `ideal_fit_score`. |
 | `proven_fit_company_tier` | Enum | Hot / Qualified / Nurture / Skip | Derived from `proven_fit_company`. |
 | `ideal_fit_company_tier` | Enum | Hot / Qualified / Nurture / Skip | Derived from `ideal_fit_company`. |
@@ -65,7 +65,7 @@ These carry the *why* behind a drop or a Review. Long text in both systems, exce
 | `campaign` | Text/Enum | e.g. `2026-09_GA-Founders` | The join key that ties a cohort across Apollo and the CRM. The same value on every lead in the batch. |
 | `eval_group` | Enum | work / holdout | `work` = scorers to pursue; `holdout` = retained low-score sample for forward evaluation, which guards against selection bias. |
 | `score_date` | Date | ISO date | When the lead was scored — drives decay tracking and re-score cadence. |
-| `rubric_version` | Text | e.g. `v3.2` | Which rubric produced the score, so re-scores stay comparable over time. |
+| `rubric_version` | Text | e.g. `v3.3` | Which rubric produced the score, so re-scores stay comparable over time. |
 | `scoring_mode` | Enum | fully scored / scored without Linkedin API access | Whether Layer 3B was assessed. Together with `rubric_version` this is what makes scores apples-to-apples: only compare leads sharing BOTH. |
 
 ### Supporting text (long text)

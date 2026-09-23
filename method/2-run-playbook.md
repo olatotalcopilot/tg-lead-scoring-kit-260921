@@ -1,6 +1,6 @@
 # TG Sales Agency — Lead Scoring Run Playbook
 
-*How to execute a scoring run. Rubric v3.2.*
+*How to execute a scoring run. Rubric v3.3.*
 
 This is the **how**. It deliberately does not restate the scoring model or the field list — those
 live in one place each, and copying them is what causes version drift.
@@ -232,8 +232,9 @@ Each of these exists because skipping it cost something real. Do not pass one si
    It asserts the rubric's rules over the finished rows: no sentinel zeros, tiers follow their
    score, `review_reason` only on Review rows, `route` and `eval_group` inside their enums,
    `ownership` present wherever research ran, no caveat contradicting its own row, and no
-   Proven-Fit Hot row without a verified email. A violation means the output disagrees with the
-   method, which is a stop condition — fix it, or state in the run doc why it is acceptable and
+   Proven-Fit Hot row without a verified email (the scorer caps those at Qualified, so this
+   should only ever fire on a row re-tiered by hand). A violation means the output disagrees with
+   the method, which is a stop condition — fix it, or state in the run doc why it is acceptable and
    ship the violation visibly rather than silencing it. This exists because rules written in
    prose do not bind rows written by hand: hand-authored and overridden rows bypass every branch
    in the scorer.
